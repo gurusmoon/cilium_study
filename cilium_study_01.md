@@ -1,8 +1,23 @@
 
-이 문서는 CloudNet@ 팀에서 진행한 Cilium Study 내용을 정리한 자료입니다.
-본 스터디를 제공해주신 가시다님과 항상 깊이 있는 학습을 가능하게 해주시는 CloudNet@ 팀 모든 분들께 감사드립니다.
+# Cilium Study 가이드 - 01 주차
 
-# Cilium 학습 환경 구성
+> 이 문서는 CloudNet@ 팀에서 진행한 Cilium Study 내용을 정리한 자료입니다.
+> 본 스터디를 제공해주신 가시다님과 CloudNet@ 팀 모든 분들께 감사드립니다.
+
+## 목차
+1. [환경 구성](#1-환경-구성)
+   - 필수 도구 설치
+   - 실습 환경 구성
+   - 클러스터 설정
+2. [Flannel CNI](#2-flannel-cni)
+   - 설치 및 구성
+   - 네트워크 확인
+3. [Cilium CNI](#3-cilium-cni)
+   - 설치 준비
+   - 구성 및 설치
+   - 네트워크 확인
+
+## 1. 환경 구성
 
 ## 1. 환경설정
 
@@ -15,7 +30,6 @@
 #### Vagrant 설치
 - Vagrant를 사용하여 가상 머신 프로비저닝을 자동화합니다.
 <img width="1072" height="241" alt="Vagrant 설치 확인" src="https://github.com/user-attachments/assets/7f8a4bf4-4d20-448e-b1fb-5a578893f3a5" />
-
 
 ### 1.2 실습 환경 구성
 
@@ -43,15 +57,18 @@
 ### 1.3 실습 환경 자동화
 
 #### Vagrantfile 구성
-- **목적**: VM 정의 및 초기 설치 자동화
-- **주요 기능**:
+
+Vagrant를 통해 실습 환경을 자동으로 구성합니다:
+
+- **주요 설정**
+  - VM 정의 및 초기 설치 자동화
   - 쿠버네티스/컨테이너 버전 관리
   - Control Plane 및 Worker 노드 자동 생성
 
 ```ruby
-# 버전 정보
-K8SV = '1.33.2-1.1'       # Kubernetes Version
-CONTAINERDV = '1.7.27-1'  # Containerd Version
+# Vagrantfile 주요 설정값
+K8SV = '1.33.2-1.1'       # Kubernetes 버전
+CONTAINERDV = '1.7.27-1'  # Containerd 버전
 N = 2                     # Worker 노드 수
 
 # 기본 이미지 설정
@@ -65,6 +82,8 @@ BOX_VERSION = "202502.21.0"
 <img width="1079" height="268" alt="image" src="https://github.com/user-attachments/assets/49e48f2a-d95f-469b-9206-b2a193a7231f" />
 
 ### 1.4 클러스터 기본 정보 확인
+
+기본적인 시스템 상태와 네트워크 연결성을 확인합니다.
 
 #### 시스템 정보 확인
 | 명령어 | 설명 |
@@ -102,14 +121,18 @@ BOX_VERSION = "202502.21.0"
 | `ip -c route`                          | 컬러로 구분된 라우팅 테이블 출력 |
 <img width="1012" height="437" alt="image" src="https://github.com/user-attachments/assets/9c21c93e-1e0c-4066-80c6-c935f8f7b8b3" />
 
-| 명령어                     | 해석                                              |
+| 명령어                     | 설명                                              |
 |----------------------------|---------------------------------------------------|
 | resolvectl                 | 시스템의 DNS 설정 정보를 조회하는 명령어          |
 <img width="836" height="184" alt="image" src="https://github.com/user-attachments/assets/f8736c1b-b6cb-45c4-b724-d1e2eb537db5" />
 
-### 1.5 Kubernetes 클러스터 정보 확인
+---
 
-#### 클러스터 상태 확인
+## 2. Kubernetes 클러스터 구성
+
+### 2.1 클러스터 상태 확인
+
+클러스터의 전반적인 상태와 구성을 확인합니다:
 | 명령어 | 설명 |
 |--------|------|
 | `kubectl cluster-info` | 클러스터의 컨트롤 플레인 및 CoreDNS 상태를 확인합니다. |
@@ -123,7 +146,7 @@ BOX_VERSION = "202502.21.0"
 | `NODEIP=$(ip -4 addr show eth1 \| grep -oP '(?<=inet\s)\d+(\.\d+){3}')` | eth1 인터페이스의 IPv4 주소를 추출합니다. |
 | `echo $NODEIP` | 추출된 노드 IP를 확인합니다. |
 
-| 명령어                                                                                             | 해석                                                                                     |
+| 명령어                                                                                             | 설명                                                                                     |
 |----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | cat /var/lib/kubelet/kubeadm-flags.env                                                             | kubelet 실행 시 설정되는 환경 변수 확인                                                  |
 | echo $NODEIP                                                                                       | NODEIP 변수에 저장된 IP 주소 출력 (ex. 192.168.10.100)                                    |
@@ -198,13 +221,19 @@ BOX_VERSION = "202502.21.0"
 #### 기존 Flannel CNI 제거
 
 
-### Cilium CNI 설치
+## 3. Cilium CNI 설치 및 구성
+
+### 3.1 설치 준비
+
 #### 시스템 요구사항 확인
 <img width="1467" height="822" alt="image" src="https://github.com/user-attachments/assets/9e5201bd-b013-4108-95ae-82e3b8076d19" />
 <img width="1469" height="225" alt="image" src="https://github.com/user-attachments/assets/59d2d048-f5bc-4247-92d8-064641571874" />
 
-#### Cilium 설치
-| 명령어 | 해석 |
+### 3.2 Cilium 설치
+
+Helm을 사용하여 Cilium을 설치하고 구성합니다:
+
+| 명령어 | 설명 |
 |--------|------|
 | `helm repo add cilium https://helm.cilium.io` | Helm 저장소에 Cilium Chart를 추가 |
 | `helm install cilium cilium/cilium ...` | Cilium CNI 플러그인을 Helm을 통해 설치 |
@@ -271,7 +300,10 @@ BOX_VERSION = "202502.21.0"
 <img width="1469" height="86" alt="image" src="https://github.com/user-attachments/assets/c768b348-af7f-4eb9-abda-ff7c357f3086" />
 
 #### Cilium 설치 확인
-##### Cilium cli 설치
+### 3.3 Cilium CLI 설치 및 구성
+
+Cilium CLI를 설치하고 기본 설정을 진행합니다:
+
 | 명령어 | 설명 |
 |--------|------|
 | `CILIUM_CLI_VERSION=$(curl -s https://raw.githubusercontent.com/cilium/cilium-cli/main/stable.txt)` | 최신 Cilium CLI 버전 정보를 GitHub에서 가져와 `CILIUM_CLI_VERSION` 변수에 저장합니다. |
@@ -300,7 +332,9 @@ BOX_VERSION = "202502.21.0"
 | `kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg status --verbose` | Cilium의 상태, 환경, API 지원 범위 등을 상세히 확인 |
 <img width="1467" height="601" alt="image" src="https://github.com/user-attachments/assets/8c3843a8-47ad-4fdc-84fc-7f9683e2e752" />
 
-#### 네트워크 기본정보
+### 3.4 네트워크 구성 확인
+
+Cilium이 구성한 네트워크 설정을 확인합니다:
 | 명령어 | 설명 |
 |--------|------|
 | `ip -c addr show lxc_health` | 현재 노드에서 Cilium의 health 체크용 인터페이스 `lxc_health`의 IP 주소 출력 |
