@@ -10,7 +10,28 @@
    - 실습 환경 구성
    - 클러스터 설정
 2. [Flannel CNI](#2-flannel-cni)
-   - 설치 및 구성
+   -#### 컨테이너 디버깅 및 런타임 관리
+
+containerd 기반의 컨테이너 런타임을 직접 제어하고 문제를 진단합니다:
+
+| 명령어 | 설명 |
+|--------|------|
+| `crictl ps` | 실행 중인 컨테이너 목록을 확인합니다. |
+| `crictl logs <container-id>` | 특정 컨테이너의 로그를 확인합니다. |
+| `crictl inspect <container-id>` | 컨테이너의 상세 설정과 상태를 검사합니다. |
+| `crictl exec -it <container-id> <command>` | 실행 중인 컨테이너에 접속하여 명령을 실행합니다. |
+
+다중 노드 컨테이너 상태 확인:
+
+| 명령어 | 설명 |
+|--------|------|
+| `for i in w1 w2 ; do`<br>`  echo ">> node : k8s-$i <<"`<br>`  sshpass -p 'vagrant' ssh vagrant@k8s-$i sudo crictl ps`<br>`  echo`<br>`done` | - 각 워커 노드(`k8s-w1`, `k8s-w2`)의 컨테이너 목록 확인<br>- containerd 기반 컨테이너의 저수준 상태 확인<br>- `kubectl`보다 더 상세한 런타임 정보 제공<br>- 장애 진단 및 문제 해결에 유용 |
+
+> **디버깅 베스트 프랙티스**
+> - 컨테이너 ID는 `crictl ps`로 먼저 확인
+> - 로그 확인 시 `--tail` 옵션으로 출력량 제한
+> - 문제 발생 시 `crictl inspect`로 상세 설정 검토
+> - 네트워크 이슈는 `crictl exec`로 내부 진단 및 구성
    - 네트워크 확인
 3. [Cilium CNI](#3-cilium-cni)
    - 설치 준비
@@ -24,8 +45,15 @@
 ### 1.1 필수 도구 설치
 
 #### VirtualBox 설치
-- VirtualBox를 통해 가상 머신 환경을 구성합니다.
-<img width="1077" height="269" alt="VirtualBox 설치 확인" src="https://github.com/user-attachments/assets/c6e4e599-95fd-49e5-b5e5-dac7f6f8d60c" />
+
+VirtualBox를 통해 가상 머신 환경을 구성합니다:
+
+> **설치 확인 화면**
+> - VirtualBox 버전: 7.x.x
+> - CLI 도구: VBoxManage 사용 가능
+> - 가상화 지원: 하드웨어 가상화 활성화 상태
+
+<img width="1077" height="269" alt="VirtualBox 설치 및 버전 확인" src="https://github.com/user-attachments/assets/c6e4e599-95fd-49e5-b5e5-dac7f6f8d60c" />
 
 #### Vagrant 설치
 - Vagrant를 사용하여 가상 머신 프로비저닝을 자동화합니다.
@@ -34,6 +62,16 @@
 ### 1.2 실습 환경 구성
 
 #### 클러스터 구성도
+
+실습에 사용될 Kubernetes 클러스터의 구성입니다:
+
+> **구성 요소**
+> - Control Plane 노드 1대
+> - Worker 노드 2대
+> - 내부 네트워크: 192.168.10.0/24
+> - 외부 연결: NAT를 통한 인터넷 접속
+> - CNI: 초기 상태는 미설치 (Flannel -> Cilium 전환 예정)
+
 <img width="1750" height="614" alt="Kubernetes 클러스터 구성도" src="https://github.com/user-attachments/assets/1424a85d-0aad-405f-b02d-2de2ee0c59c2" />
 
 #### 노드 구성
@@ -86,13 +124,23 @@ BOX_VERSION = "202502.21.0"
 기본적인 시스템 상태와 네트워크 연결성을 확인합니다.
 
 #### 시스템 정보 확인
+
+기본적인 시스템 설정과 상태를 확인합니다:
+
 | 명령어 | 설명 |
 |--------|------|
 | `whoami` | 현재 로그인된 사용자 이름을 확인합니다. (`root`) |
 | `pwd` | 현재 작업 중인 디렉토리 경로를 확인합니다. (`/root`) |
 | `hostnamectl` | 호스트 이름, OS, 커널, 가상화, 아키텍처 등 시스템 정보를 확인합니다. |
 | `htop` | CPU, 메모리 사용량, 프로세스 목록 등 시스템 리소스를 실시간으로 모니터링합니다. |
-<img width="451" height="214" alt="image" src="https://github.com/user-attachments/assets/99e9d932-85f1-45fe-a51c-157c2df02d3d" />
+
+> **확인된 시스템 정보**
+> - 호스트명: k8s-ctr (Control Plane 노드)
+> - OS: Ubuntu 24.04 LTS
+> - 커널: Linux 6.x
+> - 가상화: VirtualBox 환경에서 실행 중
+
+<img width="451" height="214" alt="시스템 기본 정보 확인 결과" src="https://github.com/user-attachments/assets/99e9d932-85f1-45fe-a51c-157c2df02d3d" />
 
 #### 네트워크 연결 확인
 | 명령어 | 설명 |
@@ -114,7 +162,6 @@ BOX_VERSION = "202502.21.0"
 | `ss -tnp \| grep sshd` | 현재 SSH 연결 상태를 확인합니다. |
 | `ip -c addr` | 컬러로 구분된 IP 인터페이스 정보를 확인합니다. |
 | `ip -c route` | 컬러로 구분된 라우팅 테이블을 확인합니다. |
-
 |----------------------------------------|------|
 | `ss -tnp | grep sshd`                  | 현재 SSH 연결 중인 세션 확인 (ESTAB: 연결 상태) |
 | `ip -c addr`                           | 컬러로 구분된 IP 인터페이스 및 주소 정보 출력 |
