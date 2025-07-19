@@ -332,6 +332,7 @@ BOX_VERSION = "202502.21.0"
 | 명령어 | 설명 |
 |--------|------|
 | `kubectl get pod -owide` | 모든 파드의 IP 및 노드 위치 등 상세 정보 확인 |
+
 | 명령어 | 설명 |
 |--------|------|
 | `kubectl get svc,ep webpod` | webpod의 서비스 및 엔드포인트 정보를 확인합니다. |
