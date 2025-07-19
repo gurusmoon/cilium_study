@@ -1,44 +1,57 @@
 
-#### 환경설정
-Virtual Box 설치
-<img width="1077" height="269" alt="image" src="https://github.com/user-attachments/assets/c6e4e599-95fd-49e5-b5e5-dac7f6f8d60c" />
+# Cilium 학습 환경 구성
 
-Vagrant 설치
-<img width="1072" height="241" alt="image" src="https://github.com/user-attachments/assets/7f8a4bf4-4d20-448e-b1fb-5a578893f3a5" />
+## 1. 환경설정
+
+### 1.1 필수 도구 설치
+
+#### VirtualBox 설치
+- VirtualBox를 통해 가상 머신 환경을 구성합니다.
+<img width="1077" height="269" alt="VirtualBox 설치 확인" src="https://github.com/user-attachments/assets/c6e4e599-95fd-49e5-b5e5-dac7f6f8d60c" />
+
+#### Vagrant 설치
+- Vagrant를 사용하여 가상 머신 프로비저닝을 자동화합니다.
+<img width="1072" height="241" alt="Vagrant 설치 확인" src="https://github.com/user-attachments/assets/7f8a4bf4-4d20-448e-b1fb-5a578893f3a5" />
 
 
-### 실습 환경 개요
-<img width="1750" height="614" alt="image" src="https://github.com/user-attachments/assets/1424a85d-0aad-405f-b02d-2de2ee0c59c2" />
+### 1.2 실습 환경 구성
 
-* **기본 구성**:
+#### 클러스터 구성도
+<img width="1750" height="614" alt="Kubernetes 클러스터 구성도" src="https://github.com/user-attachments/assets/1424a85d-0aad-405f-b02d-2de2ee0c59c2" />
 
-  * **Control Plane**: `k8s-ctr` (IP: `192.168.10.100`)
-  * **Worker 1**: `k8s-w1` (IP: `192.168.10.101`)
-  * **Worker 2**: `k8s-w2` (IP: `192.168.10.102`)
+#### 노드 구성
+| 노드 유형 | 호스트명 | IP 주소 |
+|-----------|----------|----------|
+| Control Plane | `k8s-ctr` | `192.168.10.100` |
+| Worker 1 | `k8s-w1` | `192.168.10.101` |
+| Worker 2 | `k8s-w2` | `192.168.10.102` |
 
-* **공통사항**:
-
-  * `eth0` (NAT): `10.0.2.15` (모든 노드 동일)
-  * `eth1` (Private network): 고정 IP 할당
-  * Ubuntu 24.04 베이스 이미지 사용
-  * `kubeadm`으로 초기화 및 워커 조인 완료
-  * **CNI 미설치 상태**
+#### 공통 환경 설정
+- **네트워크 인터페이스**
+  - `eth0`: NAT (IP: `10.0.2.15`, 모든 노드 동일)
+  - `eth1`: Private network (고정 IP 할당)
+- **시스템 환경**
+  - OS: Ubuntu 24.04 베이스 이미지
+  - 클러스터: `kubeadm`으로 초기화 및 워커 노드 조인 완료
+  - 상태: **CNI 미설치 상태**
 
 ---
 
-### 실습 구성 파일 정리
+### 1.3 실습 환경 자동화
 
-#### `Vagrantfile`
+#### Vagrantfile 구성
+- **목적**: VM 정의 및 초기 설치 자동화
+- **주요 기능**:
+  - 쿠버네티스/컨테이너 버전 관리
+  - Control Plane 및 Worker 노드 자동 생성
 
-* VM 정의 및 초기 설치 자동화
-* 변수로 쿠버네티스/컨테이너 버전 지정
-* Control Plane 및 Worker 노드 자동 생성
-
-``` 
+```ruby
+# 버전 정보
 K8SV = '1.33.2-1.1'       # Kubernetes Version
 CONTAINERDV = '1.7.27-1'  # Containerd Version
 N = 2                     # Worker 노드 수
 
+# 기본 이미지 설정
 BOX_IMAGE = "bento/ubuntu-24.04"
 BOX_VERSION = "202502.21.0"
 ```
@@ -48,29 +61,38 @@ BOX_VERSION = "202502.21.0"
 #### 노드들 eth0 ip 확인
 <img width="1079" height="268" alt="image" src="https://github.com/user-attachments/assets/49e48f2a-d95f-469b-9206-b2a193a7231f" />
 
-#### k8s-ctl에서 기본정보 확인
-| 명령어              | 해석 |
-|---------------------|------|
-| `whoami`            | 현재 로그인된 사용자 이름 출력 (`root`) |
-| `pwd`               | 현재 작업 중인 디렉토리 경로 출력 (`/root`) |
-| `hostnamectl`       | 호스트 이름, OS, 커널, 가상화, 아키텍처 등 시스템 정보 출력 |
-| `htop`              | CPU, 메모리 사용량, 프로세스 목록 등 시스템 리소스를 실시간 모니터링하는 도구 실행 |
+### 1.4 클러스터 기본 정보 확인
+
+#### 시스템 정보 확인
+| 명령어 | 설명 |
+|--------|------|
+| `whoami` | 현재 로그인된 사용자 이름을 확인합니다. (`root`) |
+| `pwd` | 현재 작업 중인 디렉토리 경로를 확인합니다. (`/root`) |
+| `hostnamectl` | 호스트 이름, OS, 커널, 가상화, 아키텍처 등 시스템 정보를 확인합니다. |
+| `htop` | CPU, 메모리 사용량, 프로세스 목록 등 시스템 리소스를 실시간으로 모니터링합니다. |
 <img width="451" height="214" alt="image" src="https://github.com/user-attachments/assets/99e9d932-85f1-45fe-a51c-157c2df02d3d" />
 
-| 명령어                                | 해석 |
-|---------------------------------------|------|
-| `cat /etc/hosts`                      | 호스트 파일 내용을 출력하여 IP 주소와 호스트 이름의 매핑 정보를 확인 |
-| `ping -c 1 k8s-w1`                    | `k8s-w1` 호스트(IP: 192.168.10.101)로 1회 ping 요청을 보내 네트워크 연결 상태 확인 |
-| `ping -c 1 k8s-w2`                    | `k8s-w2` 호스트(IP: 192.168.10.102)로 1회 ping 요청을 보내 네트워크 연결 상태 확인 |
+#### 네트워크 연결 확인
+| 명령어 | 설명 |
+|--------|------|
+| `cat /etc/hosts` | 호스트 파일의 IP 주소와 호스트 이름 매핑을 확인합니다. |
+| `ping -c 1 k8s-w1` | Worker 1 노드(`192.168.10.101`)와의 네트워크 연결을 확인합니다. |
+| `ping -c 1 k8s-w2` | Worker 2 노드(`192.168.10.102`)와의 네트워크 연결을 확인합니다. |
 <img width="614" height="405" alt="image" src="https://github.com/user-attachments/assets/81a84007-dfde-4f52-b5d5-ed22b907a24a" />
 
-| 명령어                                                                 | 해석 |
-|------------------------------------------------------------------------|------|
-| `sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w1 hostname` | `k8s-w1` 노드에 비밀번호 `vagrant`를 이용해 SSH 접속한 뒤 호스트 이름 출력 |
-| `sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w2 hostname` | `k8s-w2` 노드에 비밀번호 `vagrant`를 이용해 SSH 접속한 뒤 호스트 이름 출력 |
-<img width="777" height="85" alt="image" src="https://github.com/user-attachments/assets/54fe9e14-38af-42ea-9df3-d61d738e19ff" />
+#### SSH 접속 테스트
+| 명령어 | 설명 |
+|--------|------|
+| `sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w1 hostname` | Worker 1 노드에 SSH 접속하여 호스트 이름을 확인합니다. |
+| `sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w2 hostname` | Worker 2 노드에 SSH 접속하여 호스트 이름을 확인합니다. |
 
-| 명령어                                 | 해석 |
+#### 네트워크 인터페이스 상태 확인
+| 명령어 | 설명 |
+|--------|------|
+| `ss -tnp \| grep sshd` | 현재 SSH 연결 상태를 확인합니다. |
+| `ip -c addr` | 컬러로 구분된 IP 인터페이스 정보를 확인합니다. |
+| `ip -c route` | 컬러로 구분된 라우팅 테이블을 확인합니다. |
+
 |----------------------------------------|------|
 | `ss -tnp | grep sshd`                  | 현재 SSH 연결 중인 세션 확인 (ESTAB: 연결 상태) |
 | `ip -c addr`                           | 컬러로 구분된 IP 인터페이스 및 주소 정보 출력 |
@@ -82,18 +104,25 @@ BOX_VERSION = "202502.21.0"
 | resolvectl                 | 시스템의 DNS 설정 정보를 조회하는 명령어          |
 <img width="836" height="184" alt="image" src="https://github.com/user-attachments/assets/f8736c1b-b6cb-45c4-b724-d1e2eb537db5" />
 
-#### k8s-ctl에서 Kubernetes 정보 확인
-| 명령어                                     | 해석                                                                 |
-|--------------------------------------------|----------------------------------------------------------------------|
-| kubectl cluster-info                        | 클러스터의 API 서버 및 DNS 서비스 등 주요 컴포넌트의 URL 정보를 확인 |
-| kubectl get node -o wide                    | 클러스터에 등록된 노드들의 상태, IP, OS, 커널, 컨테이너 런타임 정보 확인 |
-| kubectl get pod -A -o wide                  | 전체 네임스페이스의 모든 파드 상태, 위치한 노드, IP 등 상세 정보 확인 |
-<img width="1324" height="421" alt="image" src="https://github.com/user-attachments/assets/15b8ca14-cda3-4549-8213-2473617ecfee" />
+### 1.5 Kubernetes 클러스터 정보 확인
+
+#### 클러스터 상태 확인
+| 명령어 | 설명 |
+|--------|------|
+| `kubectl cluster-info` | 클러스터의 컨트롤 플레인 및 CoreDNS 상태를 확인합니다. |
+| `kubectl get node -o wide` | 노드의 상태, IP, OS, 컨테이너 런타임 정보를 확인합니다. |
+| `kubectl get pod -A -o wide` | 모든 네임스페이스의 파드 상태와 위치를 확인합니다. |
+
+#### 클러스터 구성 확인
+| 명령어 | 설명 |
+|--------|------|
+| `cat /var/lib/kubelet/kubeadm-flags.env` | kubelet 설정 환경 변수를 확인합니다. |
+| `NODEIP=$(ip -4 addr show eth1 \| grep -oP '(?<=inet\s)\d+(\.\d+){3}')` | eth1 인터페이스의 IPv4 주소를 추출합니다. |
+| `echo $NODEIP` | 추출된 노드 IP를 확인합니다. |
 
 | 명령어                                                                                             | 해석                                                                                     |
 |----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
 | cat /var/lib/kubelet/kubeadm-flags.env                                                             | kubelet 실행 시 설정되는 환경 변수 확인                                                  |
-| NODEIP=$(ip -4 addr show eth1 \| grep -oP '(?<=inet\s)\d+(\.\d+){3}')                              | eth1 인터페이스에서 IPv4 주소를 추출하여 NODEIP 변수에 저장                              |
 | echo $NODEIP                                                                                       | NODEIP 변수에 저장된 IP 주소 출력 (ex. 192.168.10.100)                                    |
 | sed -i "s/^(KUBELET_KUBEADM_ARGS=\"[^\"]*)\"/\1 --node-ip=${NODEIP}\"/" ...                        | kubelet 설정 파일에 `--node-ip=...` 옵션을 추가                                          |
 | systemctl daemon-reexec && systemctl restart kubelet                                               | systemd 재실행 및 kubelet 서비스 재시작                                                  |
@@ -104,7 +133,6 @@ BOX_VERSION = "202502.21.0"
 <img width="1360" height="325" alt="image" src="https://github.com/user-attachments/assets/4d9f76db-3fa4-441f-9ce1-702071cff720" />
 
 
-### Flannel CNI 설치
 | 명령어                                                                                                               | 해석                                                                                 |
 |----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
 | kubectl cluster-info dump \| grep -m 2 -E "cluster-cidr\|service-cluster-ip-range"                                   | 클러스터 CIDR 및 서비스 CIDR 정보를 `cluster-info dump`로 출력                       |
@@ -301,23 +329,25 @@ BOX_VERSION = "202502.21.0"
 | 명령어 | 설명 |
 |--------|------|
 | `kubectl get pod -owide` | 모든 파드의 IP 및 노드 위치 등 상세 정보 확인 |
-| `kubectl get svc,ep webpod` | `webpod`의 서비스 및 엔드포인트 정보 확인 |
-| `c0 map get cilium_ipcache` | Cilium의 IP 캐시 확인 (목적지 Pod에 대한 정보 포함) |
-| `c0 map get cilium_ipcache \| grep $WEBPOD1IP` | 특정 웹 파드 IP에 대한 Cilium 캐시 확인 |
-| `LXC=<k8s-ctr의 가장 나중에 lxc 이름>` | curl-pod이 사용하는 LXC 인터페이스 식별 |
-| `c0bpf net show` | 노드의 eBPF 프로그램 전체 목록 출력 |
-| `c0bpf net show \| grep $LXC` | 특정 LXC 인터페이스와 연결된 eBPF 프로그램 확인 |
-| `c0bpf prog show id 1584` | 특정 eBPF 프로그램 상세 정보 확인 (프로그램 ID 기준) |
-| `c0bpf map list` | 전체 BPF 맵 목록 확인 |
+| 명령어 | 설명 |
+|--------|------|
+| `kubectl get svc,ep webpod` | webpod의 서비스 및 엔드포인트 정보를 확인합니다. |
+| `c0 map get cilium_ipcache` | Cilium의 IP 캐시를 확인합니다. (목적지 Pod 정보 포함) |
+| `c0 map get cilium_ipcache \| grep $WEBPOD1IP` | 특정 웹 파드 IP에 대한 Cilium 캐시를 확인합니다. |
+| `LXC=<k8s-ctr의 가장 나중에 lxc 이름>` | curl-pod이 사용하는 LXC 인터페이스를 식별합니다. |
+| `c0bpf net show` | 노드의 eBPF 프로그램 전체 목록을 출력합니다. |
+| `c0bpf net show \| grep $LXC` | 특정 LXC 인터페이스와 연결된 eBPF 프로그램을 확인합니다. |
+| `c0bpf prog show id 1584` | 특정 eBPF 프로그램의 상세 정보를 확인합니다. (프로그램 ID 기준) |
+| `c0bpf map list` | 전체 BPF 맵 목록을 확인합니다. |
 <img width="1469" height="664" alt="image" src="https://github.com/user-attachments/assets/40dce98b-c3f6-45da-a120-9bdeb49b5216" />
 <img width="1469" height="641" alt="image" src="https://github.com/user-attachments/assets/3b0b4001-960d-4e17-8b0a-1b2c64c15a51" />
 <img width="736" height="174" alt="image" src="https://github.com/user-attachments/assets/e33828a3-f41b-4693-8663-83103fe7918b" />
  
 ##### 다른 노드간 pod->pod 통신
-| 명령어 | 해석 |
+| 명령어 | 설명 |
 |--------|------|
-| `ngrep -tW byline -d eth1 '' 'tcp port 80'` | eth1 인터페이스에서 TCP 80 포트 트래픽을 실시간으로 캡처하여 줄 단위로 출력 |
-| `kubectl exec -it curl-pod -- curl $WEBPOD1IP` | curl-pod 안에서 webpod의 IP로 HTTP 요청 수행 |
+| `ngrep -tW byline -d eth1 '' 'tcp port 80'` | eth1 인터페이스에서 TCP 80 포트 트래픽을 실시간으로 캡처하여 줄 단위로 출력합니다. |
+| `kubectl exec -it curl-pod -- curl $WEBPOD1IP` | curl-pod 안에서 webpod의 IP로 HTTP 요청을 수행합니다. |
 <img width="1470" height="850" alt="image" src="https://github.com/user-attachments/assets/ab993ddb-e870-4e9c-a331-754f3f347754" />
 
 
