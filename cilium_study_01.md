@@ -49,20 +49,66 @@ BOX_VERSION = "202502.21.0"
 <img width="1079" height="268" alt="image" src="https://github.com/user-attachments/assets/49e48f2a-d95f-469b-9206-b2a193a7231f" />
 
 #### k8s-ctl에서 기본정보 확인
+| 명령어              | 해석 |
+|---------------------|------|
+| `whoami`            | 현재 로그인된 사용자 이름 출력 (`root`) |
+| `pwd`               | 현재 작업 중인 디렉토리 경로 출력 (`/root`) |
+| `hostnamectl`       | 호스트 이름, OS, 커널, 가상화, 아키텍처 등 시스템 정보 출력 |
+| `htop`              | CPU, 메모리 사용량, 프로세스 목록 등 시스템 리소스를 실시간 모니터링하는 도구 실행 |
 <img width="451" height="214" alt="image" src="https://github.com/user-attachments/assets/99e9d932-85f1-45fe-a51c-157c2df02d3d" />
+
+| 명령어                                | 해석 |
+|---------------------------------------|------|
+| `cat /etc/hosts`                      | 호스트 파일 내용을 출력하여 IP 주소와 호스트 이름의 매핑 정보를 확인 |
+| `ping -c 1 k8s-w1`                    | `k8s-w1` 호스트(IP: 192.168.10.101)로 1회 ping 요청을 보내 네트워크 연결 상태 확인 |
+| `ping -c 1 k8s-w2`                    | `k8s-w2` 호스트(IP: 192.168.10.102)로 1회 ping 요청을 보내 네트워크 연결 상태 확인 |
 <img width="614" height="405" alt="image" src="https://github.com/user-attachments/assets/81a84007-dfde-4f52-b5d5-ed22b907a24a" />
+
+| 명령어                                                                 | 해석 |
+|------------------------------------------------------------------------|------|
+| `sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w1 hostname` | `k8s-w1` 노드에 비밀번호 `vagrant`를 이용해 SSH 접속한 뒤 호스트 이름 출력 |
+| `sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w2 hostname` | `k8s-w2` 노드에 비밀번호 `vagrant`를 이용해 SSH 접속한 뒤 호스트 이름 출력 |
 <img width="777" height="85" alt="image" src="https://github.com/user-attachments/assets/54fe9e14-38af-42ea-9df3-d61d738e19ff" />
+
+| 명령어                                 | 해석 |
+|----------------------------------------|------|
+| `ss -tnp | grep sshd`                  | 현재 SSH 연결 중인 세션 확인 (ESTAB: 연결 상태) |
+| `ip -c addr`                           | 컬러로 구분된 IP 인터페이스 및 주소 정보 출력 |
+| `ip -c route`                          | 컬러로 구분된 라우팅 테이블 출력 |
 <img width="1012" height="437" alt="image" src="https://github.com/user-attachments/assets/9c21c93e-1e0c-4066-80c6-c935f8f7b8b3" />
+
+| 명령어                     | 해석                                              |
+|----------------------------|---------------------------------------------------|
+| resolvectl                 | 시스템의 DNS 설정 정보를 조회하는 명령어          |
 <img width="836" height="184" alt="image" src="https://github.com/user-attachments/assets/f8736c1b-b6cb-45c4-b724-d1e2eb537db5" />
 
 #### k8s-ctl에서 Kubernetes 정보 확인
+| 명령어                                     | 해석                                                                 |
+|--------------------------------------------|----------------------------------------------------------------------|
+| kubectl cluster-info                        | 클러스터의 API 서버 및 DNS 서비스 등 주요 컴포넌트의 URL 정보를 확인 |
+| kubectl get node -o wide                    | 클러스터에 등록된 노드들의 상태, IP, OS, 커널, 컨테이너 런타임 정보 확인 |
+| kubectl get pod -A -o wide                  | 전체 네임스페이스의 모든 파드 상태, 위치한 노드, IP 등 상세 정보 확인 |
 <img width="1324" height="421" alt="image" src="https://github.com/user-attachments/assets/15b8ca14-cda3-4549-8213-2473617ecfee" />
+
+| 명령어                                                                                             | 해석                                                                                     |
+|----------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| cat /var/lib/kubelet/kubeadm-flags.env                                                             | kubelet 실행 시 설정되는 환경 변수 확인                                                  |
+| NODEIP=$(ip -4 addr show eth1 \| grep -oP '(?<=inet\s)\d+(\.\d+){3}')                              | eth1 인터페이스에서 IPv4 주소를 추출하여 NODEIP 변수에 저장                              |
+| echo $NODEIP                                                                                       | NODEIP 변수에 저장된 IP 주소 출력 (ex. 192.168.10.100)                                    |
+| sed -i "s/^(KUBELET_KUBEADM_ARGS=\"[^\"]*)\"/\1 --node-ip=${NODEIP}\"/" ...                        | kubelet 설정 파일에 `--node-ip=...` 옵션을 추가                                          |
+| systemctl daemon-reexec && systemctl restart kubelet                                               | systemd 재실행 및 kubelet 서비스 재시작                                                  |
+| cat /var/lib/kubelet/kubeadm-flags.env                                                             | 설정 파일 수정 결과 확인                                                                 |
+| kubectl get node -o wide                                                                           | 클러스터 노드 상태, 내부 IP, OS, 커널, 컨테이너 런타임 정보 등 상세 정보 출력           |
 <img width="1459" height="300" alt="image" src="https://github.com/user-attachments/assets/60e54a2b-bc5e-4973-82ac-6752930cc7cf" />
 #### k8s-w1, k8s-w1에서 internal ip 변경설정
 <img width="1360" height="325" alt="image" src="https://github.com/user-attachments/assets/4d9f76db-3fa4-441f-9ce1-702071cff720" />
 
 
 ### Flannel CNI 설치
+| 명령어                                                                                                               | 해석                                                                                 |
+|----------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| kubectl cluster-info dump \| grep -m 2 -E "cluster-cidr\|service-cluster-ip-range"                                   | 클러스터 CIDR 및 서비스 CIDR 정보를 `cluster-info dump`로 출력                       |
+| kubectl get pod -n kube-system -l k8s-app=kube-dns -o wide                                                           | kube-system 네임스페이스에서 CoreDNS 파드들의 상태 및 노드 정보 확인                |
 <img width="1133" height="140" alt="image" src="https://github.com/user-attachments/assets/218291e3-7122-4d9a-a60d-56e65b7dd02e" />
 <img width="1104" height="778" alt="image" src="https://github.com/user-attachments/assets/de074aa4-19c7-4c2d-8247-604b7268e834" />
 
