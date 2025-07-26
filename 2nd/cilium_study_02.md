@@ -2,6 +2,8 @@
 
 # Cilium Study - Week 2
 
+이 문서는 CloudNet@ 팀에서 진행한 Cilium Study 내용을 정리한 자료입니다. 본 스터디를 제공해주신 가시다님과 CloudNet@ 팀 모든 분들께 감사드립니다.
+
 ## 목차
 
 ### [실습 환경 구성](#1-실습-환경-구성)
@@ -112,7 +114,7 @@ vagrant up
 > - 쿠버네티스 클러스터 구성
 > - 시스템 네트워크 설정
 
-#### 2.3.1 기본 연결성 확인
+#### 2.3.2 기본 연결성 확인
 ```bash
 # 호스트 파일 설정 확인
 cat /etc/hosts
@@ -1550,7 +1552,7 @@ helm upgrade cilium cilium/cilium --version 1.17.6 \
 | 분산 배포 | Anti-affinity | 가용성 확보 |
 | 서비스 | ClusterIP | 내부 접근 |
 
-#### 6.1.1 웹 애플리케이션 배포
+#### 6.1.2 웹 애플리케이션 배포
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -1601,7 +1603,7 @@ spec:
 
 ⸻
 
-#### 6.1.2 테스트 클라이언트 배포
+#### 6.1.3 테스트 클라이언트 배포
 
 > **클라이언트 구성**
 > - 용도: HTTP 요청 테스트
@@ -1628,7 +1630,7 @@ spec:
 
 ⸻
 
-#### 6.1.3 배포 검증
+#### 6.1.4 배포 검증
 
 > **검증 항목**
 > - 리소스 상태 확인
@@ -1667,7 +1669,7 @@ kubectl exec -it curl-pod -- sh -c \
 | Grafana | 시각화 | 대시보드 제공 |
 | 대시보드 | 사전 구성 | Cilium/Hubble 통합 |
 
-#### 6.2.1 도구 설치
+#### 6.2.2 도구 설치
 ```bash
 # 모니터링 스택 배포
 kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/1.17.6/examples/kubernetes/addons/prometheus/monitoring-example.yaml
@@ -1749,7 +1751,7 @@ done
 
 ⸻
 
-### 6.3 외부 접속 설정 🌐
+### 6.4 외부 접속 설정
 
 #### 6.3.1 NodePort 구성
 
@@ -1791,23 +1793,3 @@ echo "Prometheus: http://$NODEIP:30001"
 echo "Grafana: http://$NODEIP:30002"
 ```
 
-## 7. 결론 및 정리
-
-### 7.1 학습 내용 요약
-
-| 영역 | 내용 | 실습 |
-|------|------|------|
-| CNI | Cilium 구성/관리 | 기본 설정 |
-| 관측성 | Hubble 통합 | UI/메트릭 |
-| 정책 | L3-L7 제어 | Star Wars 데모 |
-
-### 7.2 다음 단계 학습
-
-> **심화 학습 주제**
-> - eBPF 프로그래밍
-> - 서비스 메시 통합
-> - 멀티 클러스터 구성
-> - 보안 정책 고도화
-
----
-문서 끝
