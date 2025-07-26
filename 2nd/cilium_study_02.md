@@ -6,6 +6,8 @@
 
 ## 2주차 실습 환경 개요
 
+![실습 환경 개요](image.png)
+
 - **기본 배기기포 가상 머신** : k8s-ctr, k8s-w1, k8s-w2
 - **초기 프로비저닝** : kubeadm init, join 실행
 - **Cilium CNI** 설치 상태로 배포 완료

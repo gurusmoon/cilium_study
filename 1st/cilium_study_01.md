@@ -10,29 +10,7 @@
    - 실습 환경 구성
    - 클러스터 설정
 2. [Flannel CNI](#2-flannel-cni)
-   -#### 컨테이너 디버깅 및 런타임 관리
 
-containerd 기반의 컨테이너 런타임을 직접 제어하고 문제를 진단합니다:
-
-| 명령어 | 설명 |
-|--------|------|
-| `crictl ps` | 실행 중인 컨테이너 목록을 확인합니다. |
-| `crictl logs <container-id>` | 특정 컨테이너의 로그를 확인합니다. |
-| `crictl inspect <container-id>` | 컨테이너의 상세 설정과 상태를 검사합니다. |
-| `crictl exec -it <container-id> <command>` | 실행 중인 컨테이너에 접속하여 명령을 실행합니다. |
-
-다중 노드 컨테이너 상태 확인:
-
-| 명령어 | 설명 |
-|--------|------|
-| `for i in w1 w2 ; do`<br>`  echo ">> node : k8s-$i <<"`<br>`  sshpass -p 'vagrant' ssh vagrant@k8s-$i sudo crictl ps`<br>`  echo`<br>`done` | - 각 워커 노드(`k8s-w1`, `k8s-w2`)의 컨테이너 목록 확인<br>- containerd 기반 컨테이너의 저수준 상태 확인<br>- `kubectl`보다 더 상세한 런타임 정보 제공<br>- 장애 진단 및 문제 해결에 유용 |
-
-> **디버깅 베스트 프랙티스**
-> - 컨테이너 ID는 `crictl ps`로 먼저 확인
-> - 로그 확인 시 `--tail` 옵션으로 출력량 제한
-> - 문제 발생 시 `crictl inspect`로 상세 설정 검토
-> - 네트워크 이슈는 `crictl exec`로 내부 진단 및 구성
-   - 네트워크 확인
 3. [Cilium CNI](#3-cilium-cni)
    - 설치 준비
    - 구성 및 설치
@@ -89,6 +67,29 @@ VirtualBox를 통해 가상 머신 환경을 구성합니다:
   - OS: Ubuntu 24.04 베이스 이미지
   - 클러스터: `kubeadm`으로 초기화 및 워커 노드 조인 완료
   - 상태: **CNI 미설치 상태**
+
+#### 컨테이너 디버깅 및 런타임 관리
+containerd 기반의 컨테이너 런타임을 직접 제어하고 문제를 진단합니다:
+
+| 명령어 | 설명 |
+|--------|------|
+| `crictl ps` | 실행 중인 컨테이너 목록을 확인합니다. |
+| `crictl logs <container-id>` | 특정 컨테이너의 로그를 확인합니다. |
+| `crictl inspect <container-id>` | 컨테이너의 상세 설정과 상태를 검사합니다. |
+| `crictl exec -it <container-id> <command>` | 실행 중인 컨테이너에 접속하여 명령을 실행합니다. |
+
+다중 노드 컨테이너 상태 확인:
+
+| 명령어 | 설명 |
+|--------|------|
+| `for i in w1 w2 ; do`<br>`  echo ">> node : k8s-$i <<"`<br>`  sshpass -p 'vagrant' ssh vagrant@k8s-$i sudo crictl ps`<br>`  echo`<br>`done` | - 각 워커 노드(`k8s-w1`, `k8s-w2`)의 컨테이너 목록 확인<br>- containerd 기반 컨테이너의 저수준 상태 확인<br>- `kubectl`보다 더 상세한 런타임 정보 제공<br>- 장애 진단 및 문제 해결에 유용 |
+
+> **디버깅 베스트 프랙티스**
+> - 컨테이너 ID는 `crictl ps`로 먼저 확인
+> - 로그 확인 시 `--tail` 옵션으로 출력량 제한
+> - 문제 발생 시 `crictl inspect`로 상세 설정 검토
+> - 네트워크 이슈는 `crictl exec`로 내부 진단 및 구성
+
 
 ---
 
