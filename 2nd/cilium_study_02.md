@@ -4,20 +4,20 @@
 
 ## 목차
 
-1. [실습 환경 구성](#1-실습-환경-구성)
-   - 실습 환경 배포
-   - 클러스터 점검
-   - 네트워크 설정 검증
+### [실습 환경 구성](#1-실습-환경-구성)
+- [x] 실습 환경 배포
+- [x] 클러스터 점검
+- [x] 네트워크 설정 검증
 
-2. [Cilium 관측 도구 구성](#2-cilium-관측-도구-구성)
-   - Hubble 설치 및 설정
-   - Prometheus & Grafana 구성
-   - 메트릭스 수집 설정
+### [Cilium 관측 도구 구성](#2-cilium-관측-도구-구성)
+- [x] Hubble 설치 및 설정
+- [x] Prometheus & Grafana 구성
+- [x] 메트릭스 수집 설정
 
-3. [네트워크 정책 실습](#3-네트워크-정책-실습)
-   - L3/L4 정책 적용
-   - L7 정책 구성
-   - 트래픽 모니터링
+### [네트워크 정책 실습](#3-네트워크-정책-실습)
+- [x] L3/L4 정책 적용
+- [x] L7 정책 구성
+- [x] 트래픽 모니터링
 
 ## 1. 실습 환경 소개
 
@@ -27,22 +27,26 @@
 > - 네트워크 정책 및 모니터링 실습을 위한 기반 환경
 
 ### 1.1 클러스터 구성
-- **컨트롤 플레인**
-  - 노드명: `k8s-ctr`
-  - 역할: 클러스터 관리 및 제어
+
+#### 컨트롤 플레인
+- 노드명: `k8s-ctr`
+- 역할: 클러스터 관리 및 제어
   
-- **워커 노드**
-  - `k8s-w1`, `k8s-w2`
-  - 역할: 워크로드 실행 및 네트워크 정책 적용
+#### 워커 노드
+- 노드명: `k8s-w1`, `k8s-w2`
+- 역할: 워크로드 실행 및 네트워크 정책 적용
 
 ### 1.2 주요 컴포넌트
-- **Kubernetes**: v1.33.2-1.1
-- **Container Runtime**: containerd v1.7.27-1
-- **CNI**: Cilium (kube-proxy 대체 모드)
+
+| 컴포넌트 | 버전 | 비고 |
+|---------|------|------|
+| **Kubernetes** | v1.33.2-1.1 | 클러스터 오케스트레이션 |
+| **Container Runtime** | containerd v1.7.27-1 | 컨테이너 실행 환경 |
+| **CNI** | Cilium | kube-proxy 대체 모드 |
 
 ---
 
-## 2. 실습 환경 배포
+## 2. 실습 환경 배포 🚀
 
 ### 2.1 배포 파일 구성
 
@@ -52,15 +56,20 @@
 > - Cilium CNI 및 관련 도구 설정 자동화
 
 #### 주요 파일 구성
-1. **Vagrantfile**
-   - 가상 머신 스펙 정의
-   - 네트워크 인터페이스 구성
-   - 초기화 스크립트 연결
 
-2. **초기화 스크립트**
-   - `init_cfg.sh`: 기본 환경 구성
-   - `k8s-ctr.sh`: 컨트롤 플레인 초기화
-   - `k8s-w.sh`: 워커 노드 조인
+##### Vagrantfile
+| 구성 요소 | 설명 |
+|----------|------|
+| 가상 머신 스펙 | CPU, 메모리, 디스크 정의 |
+| 네트워크 설정 | 인터페이스 및 네트워크 구성 |
+| 스크립트 연동 | 초기화 스크립트 실행 설정 |
+
+##### 초기화 스크립트
+| 스크립트 | 역할 | 실행 시점 |
+|----------|------|-----------|
+| `init_cfg.sh` | 기본 환경 구성 | 최초 실행 |
+| `k8s-ctr.sh` | 컨트롤 플레인 초기화 | 마스터 노드 |
+| `k8s-w.sh` | 워커 노드 조인 | 워커 노드 |
 
 ### 2.2 클러스터 배포
 
@@ -69,18 +78,34 @@
 > 2. Vagrant 설정 파일 다운로드
 > 3. 가상 머신 프로비저닝 실행
 
+#### 배포 명령어
 ```bash
 # 실습 환경 구성
 mkdir cilium-lab && cd cilium-lab
 curl -O https://raw.githubusercontent.com/gasida/vagrant-lab/refs/heads/main/cilium-study/2w/Vagrantfile
 vagrant up
+```
+
+#### 배포 순서
+1. 디렉토리 생성 및 이동
+2. Vagrant 설정 파일 다운로드
+3. 가상 머신 프로비저닝 시작
+4. 자동화된 클러스터 구성
 
 
 ⸻
 
 ### 2.3 클러스터 초기 점검
 
-> **검증 항목**
+#### 2.3.1 기본 점검 사항
+
+| 점검 영역 | 확인 항목 | 방법 |
+|-----------|-----------|------|
+| 노드 상태 | 전체 노드 Ready | `kubectl get nodes` |
+| 파드 상태 | 시스템 파드 Running | `kubectl get pods -A` |
+| 네트워크 | CNI 동작 확인 | `cilium status` |
+
+> **주요 검증 포인트**
 > - 호스트 네임 해석 설정
 > - 노드 간 SSH 연결성
 > - 네트워크 인터페이스 상태
@@ -91,6 +116,12 @@ vagrant up
 ```bash
 # 호스트 파일 설정 확인
 cat /etc/hosts
+```
+
+| 확인 사항 | 설명 | 기대 결과 |
+|----------|------|-----------|
+| 호스트 엔트리 | 노드별 IP 주소 매핑 | 모든 노드 등록 |
+| 도메인 해석 | 클러스터 도메인 설정 | 내부 DNS 동작 |
 
 #### 2.3.2 노드 연결성 검증
 ```bash
@@ -104,152 +135,363 @@ sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w2 hostname
 # 네트워크 인터페이스 상태
 ifconfig | grep -iEA1 'eth[0-9]:'
 ```
+```
 
 #### 2.3.4 클러스터 구성 검증
+
+##### 기본 정보 확인
 ```bash
 # 클러스터 기본 정보
 kubectl cluster-info
 
 # 네트워크 CIDR 설정
 kubectl cluster-info dump | grep -m 2 -E "cluster-cidr|service-cluster-ip-range"
+```
 
+##### 설정 검증
+```bash
 # kubeadm 설정 확인
 kubectl describe cm -n kube-system kubeadm-config
 kubectl describe cm -n kube-system kubelet-config
 
-# 5. 노드 정보 조회 (상태, INTERNAL-IP)
+# 노드 상태 확인
 kubectl get node -o wide
+```
 
-# 6. kubelet 인자 확인
+##### 노드별 설정
+```bash
+# kubelet 인자 확인
 cat /var/lib/kubelet/kubeadm-flags.env
 for i in w1 w2 ; do
   echo ">> node : k8s-$i <<"
   sshpass -p 'vagrant' ssh vagrant@k8s-$i cat /var/lib/kubelet/kubeadm-flags.env
   echo
 done
+```
 
-# 7. 파드 CIDR 및 IP 확인
+##### 네트워크 검증
+```bash
+# CIDR 및 IP 확인
 kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.podCIDR}{"\n"}{end}'
 kubectl get ciliumnode -o json | grep podCIDRs -A2
 kubectl get pod -A -o wide
 
-# 8. iptables 설정 확인
+# iptables 설정
 iptables-save
 iptables -t nat -S
 iptables -t filter -S
 iptables -t mangle -S
+```
+
+| 검증 항목 | 확인 내용 | 방법 |
+|----------|-----------|------|
+| 클러스터 상태 | 컨트롤 플레인 동작 | `cluster-info` |
+| 네트워크 설정 | CIDR 할당 | CIDR 범위 확인 |
+| 노드 구성 | kubelet 설정 | 설정 파일 검사 |
+| 네트워크 규칙 | iptables 상태 | 규칙 테이블 확인 |
 
 
 ⸻
 
-k8s-ctr – Cilium 설치 정보 확인
+### 2.4 Cilium 상태 점검
 
-Cilium 바이너리 설치 여부, 설정(ConfigMap), 상태, 메트릭, 엔드포인트 등을 상세히 점검합니다.
+> **점검 범위**
+> - Cilium 바이너리 설치 확인
+> - 설정 및 상태 검증
+> - 메트릭 및 모니터링 상태
 
-# 1. cilium 바이너리 및 기본 상태 확인
+#### 2.4.1 기본 설치 확인
+```bash
+# Cilium 바이너리 및 상태
 which cilium
 cilium status
 cilium config view
 kubectl get cm -n kube-system cilium-config -o json | jq
+```
 
-# 2. 상세 상태 및 메트릭
+#### 2.4.2 상세 상태 검증
+```bash
+# 설정 및 메트릭
 kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg config
 kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg status --verbose
 kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg metrics list
+```
 
-# 3. 엔드포인트 정보
+#### 2.4.3 모니터링 구성
+```bash
+# 엔드포인트 확인
 kubectl get ciliumendpoints -A
 
-# 4. 트래픽 모니터링
+# 트래픽 모니터링
 kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor
 kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor -v
 kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor -v -v
+```
 
-# 5. 엔드포인트별 상세 모니터링 및 드롭 확인
-kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor --related-to=<id>
-kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor --type drop
-kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor -v -v --hex
+| 검증 항목 | 명령어 | 확인 내용 |
+|----------|--------|-----------|
+| 바이너리 | `which cilium` | 설치 위치 |
+| 기본 상태 | `cilium status` | 동작 상태 |
+| 상세 설정 | `cilium config view` | 설정 내용 |
+| 메트릭 | `cilium-dbg metrics` | 성능 지표 |
 
+#### 2.4.4 고급 모니터링 기능
 
-⸻
+##### 엔드포인트 상세 분석
+```bash
+# 특정 엔드포인트 모니터링
+kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- \
+  cilium-dbg monitor --related-to=<id>
 
-Layer 7 모니터링
+# 드롭된 패킷 확인
+kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- \
+  cilium-dbg monitor --type drop
 
-L7(HTTP 등 애플리케이션 레벨) 트래픽을 실시간으로 확인하여 정책 적용 결과를 점검합니다.
+# 16진수 패킷 덤프
+kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- \
+  cilium-dbg monitor -v -v --hex
+```
 
-kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- cilium-dbg monitor -v --type l7
+#### 2.4.5 L7 트래픽 모니터링
+
+> **L7 모니터링 개요**
+> - HTTP 트래픽 실시간 분석
+> - 애플리케이션 레벨 정책 검증
+> - 요청/응답 상세 확인
+
+```bash
+# L7 트래픽 모니터링
+kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- \
+  cilium-dbg monitor -v --type l7
+```
+
+| 모니터링 유형 | 용도 | 명령어 옵션 |
+|--------------|------|-------------|
+| 엔드포인트 | 특정 ID 트래픽 | `--related-to` |
+| 드롭 패킷 | 차단된 트래픽 | `--type drop` |
+| 패킷 덤프 | 상세 패킷 분석 | `--hex` |
+| L7 트래픽 | HTTP 분석 | `--type l7` |
 
 ## 3. Cilium 관측 도구 구성
 
 ### 3.1 Hubble 설치 및 설정
 
-> **Hubble 개요**
-> - Cilium의 네트워크 관측(Observability) 플랫폼
-> - 실시간 네트워크 트래픽 모니터링
-> - 트래픽 플로우 시각화 및 분석
-> - 보안 정책 검증 및 디버깅
+> **Hubble 플랫폼 개요**
+> - Cilium의 네트워크 관측 도구
+> - 실시간 트래픽 모니터링
+> - 트래픽 플로우 시각화/분석
+> - 보안 정책 검증/디버깅
 
-#### 3.1.1 설치 전 환경 점검
+#### 3.1.1 사전 환경 점검
 
-> **필수 확인 사항**
-> - Cilium 구성 상태 확인
-> - Hubble 관련 인증서 및 Secret 점검
-> - 시스템 포트 상태 기록
+| 점검 항목 | 확인 내용 | 중요도 |
+|----------|-----------|---------|
+| Cilium 상태 | 구성 및 동작 상태 | 필수 |
+| 인증서/Secret | 보안 컴포넌트 | 필수 |
+| 포트 상태 | 서비스 포트 할당 | 필수 |
+
+> **주의 사항**
+> - 모든 노드의 Cilium Agent 정상 동작 확인
+> - 필요한 포트 미사용 상태 확인
+> - 인증서 갱신 주기 확인
 
 ```bash
 ```bash
-# Cilium 상태 점검
-cilium status
-cilium config view | grep -i hubble
-kubectl get cm -n kube-system cilium-config -o json | jq
+#### 3.1.2 설치 절차
 
-# 인증서 및 Secret 확인
-kubectl get secret -n kube-system | grep -iE 'cilium-ca|hubble'
+```bash
+# 1. Hubble UI 활성화
+microk8s kubectl patch configmap -n kube-system cilium-config \
+  --type merge \
+  --patch '{"data":{"hubble-ui":"{\"enabled\":true}"}}'
 
-# 포트 상태 기록 (설치 전)
-ss -tnlp | grep -iE 'cilium|hubble' | tee before.txt
+# 2. 포드 상태 확인
+microk8s kubectl get pods -n kube-system
+```
+
+#### 3.1.3 UI 접속 설정
+
+| 설정 | 값 | 설명 |
+|------|-----|------|
+| 포트 포워딩 | `kubectl port-forward -n kube-system svc/hubble-ui 12000:80` | UI 접속용 포트 설정 |
+| 접속 URL | `http://localhost:12000` | 웹 브라우저 접속 주소 |
+
+> **접속 팁**
+> - 브라우저 개발자 도구로 연결 상태 확인
+> - UI 로드 실패 시 포드 로그 확인
+> - 방화벽 설정 점검
+
+### 3.2 Prometheus & Grafana 구성
+
+#### 3.2.1 모니터링 스택 개요
+
+| 컴포넌트 | 역할 | 주요 기능 |
+|---------|------|-----------|
+| Prometheus | 메트릭 수집 | 시계열 데이터 저장/조회 |
+| Grafana | 데이터 시각화 | 대시보드 및 알람 관리 |
+| AlertManager | 알림 관리 | 알림 규칙 및 라우팅 |
+
+> **구성 특징**
+> - 클러스터 전반의 메트릭 수집
+> - Cilium 성능 지표 모니터링
+> - 커스텀 대시보드 지원
+#### 3.2.2 설치 절차
+
+##### A. Prometheus 설치
+
+```bash
+# 1. Helm 저장소 추가
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+
+# 2. Prometheus 설치
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --create-namespace \
+  --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+```
+
+##### B. Grafana 구성
+
+| 설정 | 값 | 설명 |
+|------|-----|------|
+| 서비스 타입 | LoadBalancer/NodePort | 외부 접속 설정 |
+| 기본 포트 | 3000 | Grafana UI 포트 |
+| 기본 계정 | admin/prom-operator | 초기 로그인 정보 |
+
+```bash
+# Grafana 서비스 확인
+kubectl get svc -n monitoring prometheus-grafana
+```
+
+#### 3.2.3 메트릭 수집 설정
+
+##### A. ServiceMonitor 설정
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cilium-metrics
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      k8s-app: cilium
+  namespaceSelector:
+    matchNames:
+    - kube-system
+  endpoints:
+  - port: metrics
+    interval: 10s
+```
+
+##### B. 대시보드 임포트
+
+| 대시보드 ID | 설명 | 주요 메트릭 |
+|------------|------|------------|
+| 13537 | 기본 Hubble | 트래픽 플로우 |
+| 13538 | Cilium Operator | 운영 지표 |
+| 13539 | DNS/HTTP 지표 | L7 프로토콜 |
 
 
-⸻
+#### 3.2.4 알람 설정
 
-#### 3.1.2 Hubble 설치 옵션
+##### A. 기본 알람 규칙
 
-> **설치 방식**
-> - Helm 차트: 전체 기능 설치
-> - Cilium CLI: 기본 기능 빠른 설치
+| 알람 | 조건 | 심각도 |
+|------|------|--------|
+| HighErrorRate | 에러율 > 10% | Critical |
+| PodRestarts | 재시작 > 5회 | Warning |
+| NetworkLatency | 지연 > 1s | Warning |
 
-##### A. Helm 차트 설치
+##### B. 알람 설정 예시
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: cilium-alerts
+  namespace: monitoring
+spec:
+  groups:
+  - name: cilium.rules
+    rules:
+    - alert: CiliumHighErrorRate
+      expr: rate(cilium_drop_count_total[5m]) > 0.1
+      for: 5m
+      labels:
+        severity: critical
+      annotations:
+        description: "Cilium drop rate is high"
+```
+
+#### 3.2.5 메트릭 검증
+
+##### A. Prometheus 타겟 확인
+```bash
+# 타겟 상태 확인
+kubectl port-forward svc/prometheus-operated 9090:9090 -n monitoring
+```
+
+##### B. 주요 메트릭
+
+| 메트릭 | 설명 | PromQL |
+|--------|------|--------|
+| 패킷 드롭 | 차단된 패킷 수 | `rate(cilium_drop_count_total[5m])` |
+| 연결 상태 | 활성 연결 수 | `cilium_connection_active_total` |
+| 정책 평가 | 정책 평가 횟수 | `cilium_policy_verdict_total` |
+
+> **모니터링 팁**
+> - 대시보드 필터링으로 특정 네임스페이스 관찰
+> - 알람 임계치는 환경에 맞게 조정
+> - 히스토리컬 데이터 보존 기간 설정
+
+### 3.3 Hubble 고급 설정
+
+#### 3.3.1 설치 옵션 비교
+
+| 설치 방식 | 특징 | 사용 사례 |
+|-----------|-------|-----------|
+| Helm 차트 | 전체 기능 설치 | 프로덕션 환경 |
+| Cilium CLI | 기본 기능 설치 | 테스트/개발 환경 |
+
+#### 3.3.2 Helm 차트 고급 설정
 ```bash
 # Hubble 전체 기능 설치
-helm upgrade cilium cilium/cilium --namespace kube-system --reuse-values \
+helm upgrade cilium cilium/cilium \
+  --namespace kube-system \
+  --reuse-values \
   --set hubble.enabled=true \
   --set hubble.relay.enabled=true \
   --set hubble.ui.enabled=true \
   --set hubble.ui.service.type=NodePort \
   --set hubble.ui.service.nodePort=31234 \
   --set hubble.export.static.enabled=true \
-  --set hubble.export.static.filePath=/var/run/cilium/hubble/events.log \
-  --set prometheus.enabled=true \
-  --set operator.prometheus.enabled=true \
-  --set hubble.metrics.enableOpenMetrics=true \
-  --set hubble.metrics.enabled="{dns,drop,tcp,flow,port-distribution,icmp,httpV2:exemplars=true;labelsContext=source_ip\,source_namespace\,source_workload\,destination_ip\,destination_namespace\,destination_workload\,traffic_direction}"
+  --set hubble.metrics.enabled="{dns,drop,tcp,flow,icmp,http}"
 ```
 
-##### B. Cilium CLI 설치
+| 설정 옵션 | 설명 | 기본값 |
+|-----------|------|---------|
+| hubble.enabled | Hubble 활성화 | false |
+| relay.enabled | Relay 서비스 | false |
+| ui.service.type | 서비스 유형 | ClusterIP |
+| metrics.enabled | 수집 메트릭 | [] |
+
+#### 3.3.3 CLI 기반 설치
+
 ```bash
-# 기본 기능만 활성화
+# 1. 기본 설치
 cilium hubble enable
 
-# UI 포함 활성화
+# 2. UI 포함 설치
 cilium hubble enable --ui
 ```
 
 
-⸻
+#### 3.3.4 설치 검증
 
-⚙️ 설치 후 검증
-
-설치가 완료된 후, Relay 상태와 ConfigMap, Secret, 포트 열림 상태 등을 다시 확인합니다.
+##### A. 상태 확인
 
 # Relay 상태 확인
 cilium status
@@ -262,172 +504,234 @@ kubectl get cm -n kube-system cilium-config -o json | grep -i hubble
 # Secret 확인
 kubectl get secret -n kube-system | grep -iE 'cilium-ca|hubble'
 
-# 포트(4244) 열림 여부 확인 (설치 후)
-ss -tnlp | grep -iE 'cilium|hubble' | tee after.txt
-vi -d before.txt after.txt
+### 3.4 네트워크 정책 실습
 
-# 각 워커 노드에서도 4244 포트 확인
-for i in w1 w2 ; do
-  echo ">> node : k8s-$i <<"
-  sshpass -p 'vagrant' ssh vagrant@k8s-$i sudo ss -tnlp | grep 4244
-  echo
-done
+#### 3.4.1 L3/L4 정책 개요
 
+| 정책 수준 | 제어 대상 | 예시 |
+|----------|-----------|------|
+| L3 | IP 주소/CIDR | 특정 네트워크 접근 제어 |
+| L4 | 포트/프로토콜 | 서비스 포트 접근 제어 |
+
+> **정책 특징**
+> - IP 기반 네트워크 분리
+> - 포트 레벨 접근 제어
+> - 프로토콜 기반 필터링
+> - 레이블 기반 선택자 지원
+
+#### 3.4.2 기본 정책 설정
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: l3-l4-policy
+  namespace: default
+spec:
+  endpointSelector:
+    matchLabels:
+      app: backend
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app: frontend
+    toPorts:
+    - ports:
+      - port: "8080"
+        protocol: TCP
+```
+
+| 정책 요소 | 설명 | 예시 |
+|----------|------|------|
+| endpointSelector | 정책 적용 대상 | app=backend |
+| fromEndpoints | 허용할 출발지 | app=frontend |
+| toPorts | 허용할 포트 | 8080/TCP |
+
+#### 3.4.3 정책 검증 방법
+
+```bash
+# 1. 정책 상태 확인
+kubectl get cnp
+
+# 2. 정책 상세 확인
+kubectl describe cnp l3-l4-policy
+```
+
+
+### 3.5 L7 정책 구성 🌐
+
+#### 3.5.1 L7 정책 개요 📝
+
+| 특징 | 설명 | 예시 |
+|------|------|------|
+| 프로토콜 인식 | HTTP/DNS/gRPC 등 | 메서드/경로 필터링 |
+| 세부 제어 | 요청/응답 제어 | 헤더/쿠키 검사 |
+| 보안 강화 | 애플리케이션 보호 | API 접근 제한 |
+
+#### 3.5.2 HTTP 정책 예시 ⚡️
+
+```yaml
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: l7-policy
+spec:
+  endpointSelector:
+    matchLabels:
+      app: api-server
+  ingress:
+  - fromEndpoints:
+    - matchLabels:
+        app: client
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      rules:
+        http:
+        - method: GET
+          path: "/api/v1/products"
+#### 3.5.3 정책 구성 요소 📋
+
+| 구성 | 설명 | 예시 |
+|------|------|------|
+| 프로토콜 | L7 프로토콜 지정 | HTTP/DNS/Kafka |
+| 메서드 | 허용할 HTTP 메서드 | GET/POST/PUT |
+| 경로 | URL 패턴 매칭 | /api/v1/* |
+| 헤더 | HTTP 헤더 규칙 | Authorization |
+
+#### 3.5.4 검증 및 모니터링 🔍
+
+```bash
+# 1. 정책 적용 확인
+kubectl get cnp l7-policy
+
+# 2. 트래픽 모니터링
+cilium monitor --type l7
+```
+
+
+### 3.6 트래픽 모니터링 🔍
+
+#### 3.6.1 모니터링 도구 📊
+
+| 도구 | 용도 | 특징 |
+|------|------|------|
+| Hubble UI | 시각화 | 플로우 그래프 |
+| cilium monitor | 실시간 분석 | 상세 로그 |
+| Prometheus | 메트릭 수집 | 시계열 데이터 |
+
+#### 3.6.2 모니터링 명령어 ⌨️
+
+```bash
+# 1. 일반 트래픽 모니터링
+cilium monitor
+
+# 2. L7 트래픽 모니터링
+cilium monitor --type l7
+
+# 3. 특정 엔드포인트 모니터링
+cilium monitor --related-to ENDPOINT_ID
+
+# 4. 드롭된 패킷 모니터링
+cilium monitor --type drop
+```
+
+#### 3.6.3 모니터링 분석 팁 💡
+
+| 상황 | 확인 사항 | 해결 방법 |
+|------|-----------|-----------|
+| 연결 거부 | 정책 매칭 여부 | 레이블/정책 검토 |
+| L7 오류 | 프로토콜 설정 | 정책 규칙 확인 |
+| 성능 저하 | 메트릭 추이 | 리소스 조정 |
+
+> 🔍 **디버깅 체크리스트**
+> - 엔드포인트 상태 확인
+> - 정책 적용 상태 검증
+> - 로그 레벨 조정
+> - 메트릭 대시보드 활용
 
 ⸻
 
-#### 3.1.4 Relay 구성 검증
+이것으로 Cilium Study Week 2 문서를 마칩니다. 
+더 자세한 내용은 [Cilium 공식 문서](https://docs.cilium.io)를 참조하세요.
 
-> **Relay 서비스**
-> - 각 노드의 Hubble 데이터를 중앙 집계
-> - 포트 4245로 gRPC 서비스 제공
-> - 클러스터 전체 네트워크 흐름 수집
+### 3.7 Hubble Client 구성 🖥️
 
-```bash
-# Relay Pod 상태
-kubectl get pod -n kube-system -l k8s-app=hubble-relay
-kubectl describe pod -n kube-system -l k8s-app=hubble-relay
+#### 3.7.1 Client 설정 개요 📝
 
-# 서비스 및 Endpoint 확인
-kubectl get svc,ep -n kube-system hubble-relay
-# NAME                     ENDPOINTS           AGE
-# endpoints/hubble-relay   172.20.1.202:4245   7m54s
+| 구성 요소 | 설명 | 용도 |
+|----------|------|------|
+| API 접근 | 로컬 Hubble API | 상태 조회/제어 |
+| Relay 연결 | 포트 포워딩 | 클러스터 연결 |
+| CLI 도구 | 명령행 인터페이스 | 모니터링/분석 |
 
-# Relay 설정 검증
-kubectl describe cm -n kube-system hubble-relay-config
-
-# 주요 설정 예시
-cluster-name: default
-peer-service: "hubble-peer.kube-system.svc.cluster.local.:443"
-listen-address: :4245
-```
-
-
-⸻
-
-#### 3.1.5 Peer 서비스 검증
-
-> **Peer 서비스**
-> - 각 노드별 Hubble API 제공
-> - 포트 4244로 노드 데이터 수집
-> - Relay 서비스와 연동
+#### 3.7.2 Client 연결 설정 ⚡️
 
 ```bash
-# Peer 서비스 상태
-kubectl get svc,ep -n kube-system hubble-peer
-# NAME                  TYPE        CLUSTER-IP    PORT(S)   AGE
-# service/hubble-peer   ClusterIP   10.96.145.0   443/TCP   5h55m
-
-# Endpoint 검증
-# 노드별 4244 포트 연결:
-# 192.168.10.100:4244,192.168.10.101:4244,192.168.10.102:4244
-```
-
-
-⸻
-
-#### 3.1.6 UI 서비스 검증
-
-> **Hubble UI**
-> - 네트워크 흐름 시각화 도구
-> - NGINX 기반 웹 인터페이스
-> - NodePort로 외부 접근 제공
-
-```bash
-# UI 컴포넌트 검증
-kubectl describe pod -n kube-system -l k8s-app=hubble-ui
-kubectl describe cm -n kube-system hubble-ui-nginx
-
-# 서비스 상태 확인
-kubectl get svc,ep -n kube-system hubble-ui
-# NAME                TYPE       CLUSTER-IP    PORT(S)        AGE
-# service/hubble-ui   NodePort   10.96.66.67   80:31234/TCP   17m
-# endpoints/hubble-ui   172.20.2.70:8081   17m
-```
-
-#### 3.1.7 UI 접속 설정
-
-> **접속 방법**
-> 1. 노드 IP 확인 (eth1 인터페이스)
-> 2. NodePort 서비스로 접속 (포트 31234)
-
-```bash
-# UI 접속 주소 확인
-NODEIP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
-echo -e "Hubble UI 주소 → http://$NODEIP:31234"
-```
-
-### 3.2 Hubble Client 구성
-
-> **Client 설정 개요**
-> - 로컬 시스템에서 Hubble API 접근
-> - 포트 포워딩을 통한 Relay 연결
-> - CLI 도구를 통한 모니터링
-
-#### 3.2.1 Client 연결 설정
-
-```bash
-# Relay 포트 포워딩
+# 1. Relay 연결 설정
 cilium hubble port-forward&
-# Hubble Relay is available at 127.0.0.1:4245
 
-# 포트 상태 확인
+# 2. 연결 상태 확인
 ss -tnlp | grep 4245
 
-# API 연결 검증
+# 3. API 상태 검증
 hubble status
-# Healthcheck (via localhost:4245): Ok
-# Current/Max Flows: 12,285/12,285 (100.00%)
-# Flows/s: 41.20
 ```
 
-#### 3.2.2 Client 설정 관리
+| 상태 정보 | 설명 | 예시 값 |
+|----------|------|---------|
+| Healthcheck | API 연결 상태 | Ok |
+| Flows | 현재/최대 플로우 | 12,285/12,285 |
+| Rate | 초당 플로우 수 | 41.20/s |
+
+#### 3.7.3 Client 설정 관리 ⚙️
 
 ```bash
-# 서버 설정 확인
+# 1. 설정 확인
 hubble config view 
-# port-forward-port: "4245"
-# server: localhost:4245
 
-# 서버 옵션 확인
-hubble help status | grep 'server string'
-# --server string    Address of a Hubble server
-
-# 트래픽 흐름 모니터링
-kubectl get ciliumendpoints.cilium.io -n kube-system 
-hubble observe
+# 2. 트래픽 모니터링
 hubble observe -f
 ```
 
+| 명령어 | 용도 | 옵션 |
+|--------|------|-------|
+| config view | 설정 확인 | 서버/포트 설정 |
+| observe | 트래픽 관찰 | -f: 실시간 모드 |
+| status | 상태 확인 | --server: 서버 지정 |
+
 
 ⸻
 
-### 3.3 운영 편의성 설정
+### 3.8 고급 운영 관리 🔧
 
-> **Cilium Agent 접근 단축키**
-> - 노드별 Pod 접근 alias 설정
-> - Cilium 명령어 실행 단축키
-> - BPF 도구 접근 단축키
+#### 3.8.1 운영 환경 설정 ⚙️
+
+| 구성 요소 | 설명 | 용도 |
+|----------|------|------|
+| 환경 변수 | Pod 식별자 | 노드별 접근 |
+| Alias | 명령어 단축키 | 빠른 실행 |
+| BPF 도구 | 저수준 접근 | 상세 분석 |
 
 ```bash
-# Pod 환경변수 설정
-export CILIUMPOD0=$(kubectl get -l k8s-app=cilium pods -n kube-system --field-selector spec.nodeName=k8s-ctr -o jsonpath='{.items[0].metadata.name}')
-export CILIUMPOD1=$(kubectl get -l k8s-app=cilium pods -n kube-system --field-selector spec.nodeName=k8s-w1  -o jsonpath='{.items[0].metadata.name}')
-export CILIUMPOD2=$(kubectl get -l k8s-app=cilium pods -n kube-system --field-selector spec.nodeName=k8s-w2  -o jsonpath='{.items[0].metadata.name}')
-echo $CILIUMPOD0 $CILIUMPOD1 $CILIUMPOD2
+# 1. Pod 환경변수 설정
+export CILIUMPOD0=$(kubectl get -l k8s-app=cilium pods -n kube-system \
+  --field-selector spec.nodeName=k8s-ctr -o jsonpath='{.items[0].metadata.name}')
+export CILIUMPOD1=$(kubectl get -l k8s-app=cilium pods -n kube-system \
+  --field-selector spec.nodeName=k8s-w1 -o jsonpath='{.items[0].metadata.name}')
+export CILIUMPOD2=$(kubectl get -l k8s-app=cilium pods -n kube-system \
+  --field-selector spec.nodeName=k8s-w2 -o jsonpath='{.items[0].metadata.name}')
 
-# Cilium 명령어 단축키
+# 2. Cilium 명령어 단축키
 alias c0="kubectl exec -it $CILIUMPOD0 -n kube-system -c cilium-agent -- cilium"
 alias c1="kubectl exec -it $CILIUMPOD1 -n kube-system -c cilium-agent -- cilium"
 alias c2="kubectl exec -it $CILIUMPOD2 -n kube-system -c cilium-agent -- cilium"
 
-# BPF 도구 단축키
+# 3. BPF 도구 단축키
 alias c0bpf="kubectl exec -it $CILIUMPOD0 -n kube-system -c cilium-agent -- bpftool"
 alias c1bpf="kubectl exec -it $CILIUMPOD1 -n kube-system -c cilium-agent -- bpftool"
 alias c2bpf="kubectl exec -it $CILIUMPOD2 -n kube-system -c cilium-agent -- bpftool"
-
-# 단축키 사용 예시
-c0 endpoint list
 ```
 c0 endpoint list -o json
 c1 endpoint list
@@ -458,217 +762,254 @@ c1 monitor -v -v --hex
 c1 monitor -v --type l7
 
 
-#### 3.4.3 IP 및 Identity 관리
+#### 3.8.6 IP 및 Identity 관리 🔑
+
+| 관리 항목 | 명령어 | 설명 |
+|----------|--------|------|
+| IP 주소 | `c0 ip list` | IP 목록 조회 |
+| Identity | `c0 identity list` | 식별자 관리 |
+| 엔드포인트 | `c0 endpoint get` | 상세 정보 |
+| BPF | `c0 bpf fs show` | 파일시스템 |
+
 ```bash
-# IP 주소 관리
+# 1. IP 관리
 c0 ip list
-c0 ip list -n    # IDENTITY 정보 포함
+c0 ip list -n    # Identity 포함
 
-# Identity 관리
-c0 identity list           # 전체 identity 조회
-c0 identity list --endpoints  # 엔드포인트별 ID
+# 2. Identity 관리
+c0 identity list           # 전체 조회
+c0 identity list --endpoints  # 엔드포인트별
 
-# 엔드포인트 관리
-c0 endpoint config <id>    # 설정 확인/변경
-c0 endpoint get <id>       # 상세 정보
-c0 endpoint log <id>       # 로그 확인
-
-# BPF 파일시스템
-c0 bpf fs show            # 마운트 정보
-tree /sys/fs/bpf          # 디렉토리 구조
+# 3. 엔드포인트 관리
+c0 endpoint config <id>    # 설정
+c0 endpoint get <id>       # 정보
+c0 endpoint log <id>       # 로그
 ```
 
 
-#### 3.4.4 로드밸런서 및 NAT 관리
+#### 3.8.7 로드밸런서 및 NAT 관리 🔄
+
+##### A. 서비스 관리
+| 구성 요소 | 명령어 | 설명 |
+|----------|--------|------|
+| 서비스 목록 | `c0 service list` | LB 서비스 조회 |
+| BPF LB | `c0 bpf lb list` | BPF 로드밸런서 |
+| NAT | `c0 bpf nat list` | NAT 매핑 조회 |
+| 연결 추적 | `c0 bpf ct list` | 커넥션 트래킹 |
+
 ```bash
-# 로드밸런서 서비스
+# 1. 서비스 상태
 c0 service list
 c1 service list
-c2 service list
 
-# BPF 로드밸런서
+# 2. BPF 구성
 c0 bpf lb list
-c1 bpf lb list --revnat    # Reverse NAT 항목
+c0 bpf lb list --revnat  # Reverse NAT
 
-# 커넥션 트래킹
-c0 bpf ct list global      # 전체 연결 조회
-c0 bpf ct flush           # 연결 정보 초기화
+# 3. 네트워크 매핑
+c0 bpf nat list    # NAT 항목
+c0 bpf ct list global  # 연결 추적
+```
 
-# NAT 매핑
-c0 bpf nat list           # NAT 항목 조회
-c0 bpf nat flush          # NAT 항목 초기화
+> 💡 **관리 팁**
+> - 정기적인 상태 점검
+> - 연결 추적 테이블 관리
+> - NAT 항목 모니터링
+#### 3.8.8 시스템 모니터링 📊
 
-# IP 캐시
-c0 bpf ipcache list       # IP-Identity 매핑
-```#### 3.4.5 시스템 모니터링
+##### A. 시스템 구성 요소
+| 구성 요소 | 명령어 | 설명 |
+|----------|--------|------|
+| cgroups | `c0 cgroups list` | 리소스 제어 |
+| BPF 맵 | `c0 map list` | 맵 관리 |
+| 메트릭 | `c1 metrics list` | 성능 지표 |
+| 정책 | `c0 bpf policy get` | 정책 상태 |
+
+##### B. 모니터링 명령어
 ```bash
-# cgroup 관리
-c0 cgroups list          # cgroup 메타데이터
+# 1. 리소스 관리
+c0 cgroups list          # cgroup
+c0 map list --verbose    # BPF 맵
 
-# BPF 맵 관리
-c0 map list              # 전체 맵 목록
-c1 map list --verbose    # 상세 정보
-
-# 맵 이벤트 모니터링
+# 2. 이벤트 모니터링
 c1 map events cilium_lb4_services_v2
-c1 map events cilium_lb4_reverse_nat
-c1 map events cilium_lxc
 c1 map events cilium_ipcache
 
-# 메트릭스 및 정책
-c1 metrics list          # 전체 메트릭스
-c0 bpf policy get --all  # 정책 맵 조회
+# 3. 시스템 상태
+c1 metrics list          # 메트릭
+c0 statedb dump         # 상태 DB
+```
 
-# 시스템 상태
-c0 statedb dump         # StateDB 내용
-c0 shell -- db/show devices  # 디바이스 정보
-```>)
+> 💡 **모니터링 팁**
+> - 주요 메트릭 정기 확인
+> - 이벤트 로그 분석
+> - 시스템 상태 추적
 
-## 4. Star Wars 데모 실습
+## 4. Star Wars 데모 실습 🚀
 
-> **실습 개요**
-> - 스타워즈 테마 데모 애플리케이션 배포
-> - Cilium 네트워크 정책 적용
-> - Hubble UI로 트래픽 관찰
+### 4.1 데모 개요 📋
 
-### 4.1 데모 환경 구성
+| 구성 요소 | 설명 | 목적 |
+|----------|------|------|
+| 애플리케이션 | Star Wars 테마 앱 | 정책 테스트 |
+| 네트워크 정책 | Cilium CNP | 접근 제어 |
+| 모니터링 | Hubble UI | 트래픽 관찰 |
 
-#### 4.1.1 애플리케이션 배포
+### 4.2 환경 구성 🛠️
+
+#### 4.2.1 애플리케이션 배포 📦
+
 ```bash
-# 데모 리소스 생성
+# 1. 데모 리소스 생성
 kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/1.17.6/examples/minikube/http-sw-app.yaml
 
-# 리소스 상태 확인
+# 2. Pod 상태 확인
 kubectl get pod --show-labels
-NAME                         READY   STATUS    RESTARTS   AGE    LABELS
-deathstar-8c4c77fb7-9klws   1/1     Running   0          29s    app.kubernetes.io/name=deathstar,class=deathstar,org=empire
-deathstar-8c4c77fb7-kkwds   1/1     Running   0          29s    app.kubernetes.io/name=deathstar,class=deathstar,org=empire
-tiefighter                  1/1     Running   0          29s    app.kubernetes.io/name=tiefighter,class=tiefighter,org=empire
-xwing                       1/1     Running   0          29s    app.kubernetes.io/name=xwing,class=xwing,org=alliance
 
-# 서비스 구성 확인
+# 3. 서비스 구성 확인
 kubectl get deploy,svc,ep deathstar
 ```
 
-> **배포된 컴포넌트**
-> - Deathstar: 2개의 복제본을 가진 deployment
-> - Tiefighter: empire 조직 소속 pod
-> - Xwing: alliance 조직 소속 pod
+##### A. 배포된 컴포넌트
 
-위 명령을 통해 Deathstar 서비스가 2개의 파드로 로드밸런싱되며, Tiefighter/Xwing 파드가 생성됩니다.
+| 컴포넌트 | 유형 | 레이블 |
+|----------|------|--------|
+| Deathstar | Deployment | org=empire,class=deathstar |
+| Tiefighter | Pod | org=empire,class=tiefighter |
+| Xwing | Pod | org=alliance,class=xwing |
+```
 
-⸻
+##### B. 구성 특징
 
-#### 4.1.2 Cilium 리소스 검증
+| 특징 | 설명 |
+|------|------|
+| 로드밸런싱 | Deathstar 2개 Pod |
+| 조직 구분 | Empire vs Alliance |
+| 기본 정책 | 전체 통신 허용 |
 
-> **검증 항목**
-> - Endpoint와 Identity 리소스 상태
-> - 정책 설정 상태 (기본: Disabled)
-> - 레이블 기반 식별자 확인
+#### 4.2.2 Cilium 리소스 검증 🔍
+
+| 검증 항목 | 확인 내용 | 방법 |
+|----------|-----------|------|
+| Endpoint | 리소스 상태 | `kubectl get ciliumendpoints` |
+| Identity | 식별자 매핑 | `kubectl get ciliumidentities` |
+| 정책 상태 | 기본 Disabled | `cilium endpoint list` |
 
 ```bash
-# Cilium 리소스 조회
+# 1. Cilium 리소스 조회
 kubectl get ciliumendpoints.cilium.io -A
 kubectl get ciliumidentities.cilium.io
 
-# 엔드포인트 상태 확인
-kubectl exec -it -n kube-system ds/cilium -c cilium-agent -- cilium endpoint list
-
-# 노드별 상태 확인
+# 2. 노드별 상태 확인
 c0 endpoint list
 c1 endpoint list
-c2 endpoint list    # 정책 미적용 상태
+c2 endpoint list
 ```
 
-> **엔드포인트 예시**
-```
-ENDPOINT   POLICY (ingress)   POLICY (egress)   IDENTITY   LABELS
-1579       Disabled          Disabled          318        k8s:app.kubernetes.io/name=deathstar
-                                                         k8s:class=deathstar
-                                                         k8s:org=empire
-```
+##### A. 엔드포인트 상태 예시
 
-### 4.2 트래픽 모니터링
+| 필드 | 값 | 설명 |
+|------|-----|------|
+| ENDPOINT | 1579 | 엔드포인트 ID |
+| POLICY | Disabled | 정책 미적용 상태 |
+| IDENTITY | 318 | 식별자 번호 |
+| LABELS | k8s:org=empire | 조직 레이블 |
 
-> **초기 상태**
-> - 모든 Pod 간 통신 허용
-> - 레이블 기반 제한 없음
-> - 전체 트래픽 모니터링 가능
+### 4.3 트래픽 모니터링 👀
 
-#### 4.2.1 Identity 설정
+#### 4.3.1 초기 상태 확인 📊
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| 통신 제어 | 전체 허용 | 정책 미적용 |
+| 레이블 기반 | 제한 없음 | 모든 레이블 허용 |
+| 모니터링 | 활성화 | 전체 트래픽 관찰 |
+
+#### 4.3.2 Identity 설정 🏷️
+
 ```bash
-# Pod별 Identity 확인
+# 1. Pod별 Identity 확인
 c1 endpoint list | grep -iE 'xwing|tiefighter|deathstar'
-c2 endpoint list | grep -iE 'xwing|tiefighter|deathstar'
 
-# Identity 환경변수 설정
+# 2. Identity 환경변수 설정
 XWINGID=17141
 TIEFIGHTERID=56716
 DEATHSTARID=8113
 ```
 
-#### 4.2.2 모니터링 설정
+| Pod | Identity | 조직 |
+|-----|----------|------|
+| X-wing | 17141 | Alliance |
+| TIE Fighter | 56716 | Empire |
+| Deathstar | 8113 | Empire |
+
+#### 4.3.3 트래픽 모니터링 🔍
+
+##### A. 모니터링 설정
 ```bash
-# Cilium Agent 모니터링
+# 1. Cilium Agent 모니터링
 c0 monitor -v -v    # 컨트롤 플레인
 c1 monitor -v -v    # 워커 노드 1
-c2 monitor -v -v    # 워커 노드 2
 
-# Hubble 트래픽 관찰
-hubble observe -f   # 전체 트래픽
-hubble observe -f --from-identity $XWINGID          # X-wing 트래픽
-hubble observe -f --protocol tcp --from-identity $DEATHSTARID  # Deathstar TCP
+# 2. Hubble 트래픽 관찰
+hubble observe -f --from-identity $XWINGID          # X-wing
+hubble observe -f --protocol tcp --from-identity $DEATHSTARID  # Deathstar
 ```
 
-#### 4.2.3 접근 테스트
+##### B. 모니터링 옵션
 
-> **테스트 시나리오**
-> - X-wing에서 Deathstar 접근
-> - TIE Fighter에서 Deathstar 접근
-> - 트래픽 플로우 모니터링
+| 옵션 | 설명 | 예시 |
+|------|------|------|
+| -f | 실시간 관찰 | `observe -f` |
+| --from-identity | 출발지 필터 | `$XWINGID` |
+| --protocol | 프로토콜 필터 | `tcp` |
+
+#### 4.3.4 접근 테스트 ⚡️
+
+| 시나리오 | 설명 | 예상 결과 |
+|----------|------|-----------|
+| X-wing | Alliance 접근 | 거부 |
+| TIE Fighter | Empire 접근 | 허용 |
 
 ```bash
-# X-wing 접근 테스트
-kubectl exec xwing -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing
+# 1. X-wing 접근 테스트
+kubectl exec xwing -- curl -s -XPOST \
+  deathstar.default.svc.cluster.local/v1/request-landing
 
-# 연속 요청 테스트
+# 2. 연속 요청 테스트
 while true; do
-  kubectl exec xwing -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing
+  kubectl exec xwing -- curl -s -XPOST \
+    deathstar.default.svc.cluster.local/v1/request-landing
   sleep 5
 done
 
-# TIE Fighter 접근 테스트
-kubectl exec tiefighter -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing
+# 3. TIE Fighter 테스트
+kubectl exec tiefighter -- curl -s -XPOST \
+  deathstar.default.svc.cluster.local/v1/request-landing
 
-# 연속 요청 테스트
-while true; do
-  kubectl exec tiefighter -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing
-  sleep 5
-done
-
-# 트래픽 모니터링
+# 4. 트래픽 모니터링
 hubble observe -f --protocol tcp --from-identity $TIEFIGHTERID
-hubble observe -f --protocol tcp --from-identity $DEATHSTARID
 ```
 
+### 4.4 네트워크 정책 적용 🔒
 
-⸻
+#### 4.4.1 정책 개요
 
-### 4.3 네트워크 정책 적용
+| 구성 요소 | 설명 | 예시 |
+|----------|------|------|
+| 제어 레벨 | L3/L4 정책 | TCP/80 |
+| 필터링 기준 | 레이블 기반 | org=empire |
+| 허용 범위 | 조직 내부 | Empire 통신만 |
 
-> **정책 개요**
-> - L3/L4 레벨 접근 제어
-> - 레이블 기반 트래픽 필터링
-> - Empire 조직 내부 통신만 허용
+#### 4.4.2 정책 정의 📝
 
-#### 4.3.1 정책 정의
 ```yaml
 apiVersion: "cilium.io/v2"
 kind: CiliumNetworkPolicy
 metadata:
-  name: "rule1"
+  name: "empire-rule"
 spec:
-  description: "L3-L4 policy to restrict deathstar access to empire ships only"
+  description: "L3-L4 policy for Empire access control"
   endpointSelector:
     matchLabels:
       org: empire
@@ -676,33 +1017,87 @@ spec:
   ingress:
   - fromEndpoints:
     - matchLabels:
-```
         org: empire
     toPorts:
     - ports:
       - port: "80"
         protocol: TCP
+```
 
-# 정책 적용 및 확인
-kubectl apply -f https://raw.githubusercontent.com/cilium/cilium/1.17.6/examples/minikube/sw_l3_l4_policy.yaml
+#### 4.4.3 정책 적용 ✨
+
+```bash
+# 1. 정책 적용
+kubectl apply -f sw_l3_l4_policy.yaml
+
+# 2. 정책 상태 확인
+kubectl get cnp
+
+# 3. 트래픽 검증
+hubble observe -f --type policy-verdict
+```
+
+| 구성 요소 | 설명 | 값 |
+|----------|------|-----|
+| Selector | 대상 선택 | org=empire,class=deathstar |
+| 허용 출발지 | Empire 소속 | org=empire |
+| 허용 포트 | HTTP | TCP/80 |
+
+⸻
+
+## 5. 정리 및 결론 📝
+
+### 5.1 학습 내용 요약 
+- Cilium CNI 구성 및 관리
+- Hubble을 통한 관측성 확보
+- 네트워크 정책 실습
+
+### 5.2 다음 단계
+- 고급 네트워크 정책 구성
+- 서비스 메시 통합
+- 보안 모니터링 강화
+
+> 💡 **참고 자료**
+> - [Cilium 문서](https://docs.cilium.io)
+> - [Hubble 가이드](https://docs.cilium.io/en/stable/gettingstarted/hubble/)
+> - [정책 레퍼런스](https://docs.cilium.io/en/stable/policy/)
+#### 4.4.4 정책 검증 및 모니터링 🔍
+
+##### A. 정책 상태 확인
+```bash
+# 1. 정책 조회
 kubectl get cnp
 kubectl get cnp -o json | jq
 
-# 드롭된 패킷 모니터링
+# 2. 트래픽 모니터링
 hubble observe -f --type drop
+```
 
-정책 적용 후, 다시 xwing(org=alliance)에서 요청을 시도하면 연결조차 되지 않아야 합니다.
+##### B. 접근 테스트
 
-# 호출 시도 1: Xwing에서 요청 (타임아웃 또는 연결 실패)
-kubectl exec xwing -- curl -s -XPOST deathstar.default.svc.cluster.local/v1/request-landing --connect-timeout 2
+| 테스트 | 명령어 | 예상 결과 |
+|--------|--------|-----------|
+| X-wing 접근 | `kubectl exec xwing -- curl ...` | 연결 거부 |
+| 패킷 확인 | `hubble observe -f --type drop` | 드롭 기록 |
+| TCP 모니터링 | `hubble observe --protocol tcp` | 정책 적용 |
 
-# 모니터링: Deathstar → Xwing 간 TCP 트래픽
-hubble observe -f --protocol tcp --from-identity $DEATHSTARID
+## 5. 참고 자료 및 결론 📚
 
-#### 4.3.2 정책 검증
+### 5.1 주요 문서 📖
 
-> **정책 적용 결과**
-> - Alliance 소속 X-wing 접근 차단
+| 자료 | 설명 | URL |
+|------|------|-----|
+| 공식 문서 | Cilium 메인 문서 | [링크](https://docs.cilium.io) |
+| Hubble | 관측성 가이드 | [링크](https://docs.cilium.io/en/stable/gettingstarted/hubble/) |
+| 정책 | 네트워크 정책 | [링크](https://docs.cilium.io/en/stable/policy/) |
+
+### 5.2 학습 자원 🎓
+
+> 💡 **추가 학습 경로**
+> - Cilium GitHub 저장소 탐색
+> - 공식 블로그 글 학습
+> - Hubble 실습 튜토리얼
+> - eBPF 기술 문서 학습
 > - Empire 소속 TIE Fighter 접근 허용
 > - 정책 상태 Enabled 확인
 
@@ -1104,12 +1499,15 @@ kubectl -n kube-system exec ds/cilium -- tail -f /var/run/cilium/hubble/events.l
 
 ⸻
 
-### 5.3 Dynamic Exporter 구성
+### 5.3 Dynamic Exporter 구성 🔄
 
-> **Dynamic Exporter 특징**
-> - 실시간 구성 변경 지원
-> - 다중 필터 설정 가능
-> - 별도 파일로 로그 분리
+#### 5.3.1 Dynamic Exporter 특징 📊
+
+| 기능 | 설명 | 장점 |
+|------|------|------|
+| 실시간 구성 | 동적 설정 변경 | 무중단 운영 |
+| 다중 필터 | 복수 필터 지원 | 상세한 제어 |
+| 로그 분리 | 개별 파일 저장 | 효율적 관리 |
 
 #### 5.3.1 활성화 설정
 ```bash
@@ -1140,14 +1538,17 @@ helm upgrade cilium cilium/cilium --version 1.17.6 \
 > - 실시간 구성 변경
 > - Static Exporter와 동일한 기능 지원
 > - Pod 재시작 없이 설정 적용
-## 6. 메트릭 수집 테스트
+## 6. 메트릭 수집 테스트 📊
 
-### 6.1 테스트 애플리케이션 구성
+### 6.1 테스트 환경 구성 🔧
 
-> **구성 요소**
-> - Webpod: 샘플 웹 애플리케이션
-> - 분산 배포: Anti-affinity 설정
-> - 서비스 노출: ClusterIP
+#### 6.1.1 구성 요소 개요
+
+| 구성 요소 | 설정 | 목적 |
+|----------|------|------|
+| Webpod | 샘플 웹 앱 | 트래픽 생성 |
+| 분산 배포 | Anti-affinity | 가용성 확보 |
+| 서비스 | ClusterIP | 내부 접근 |
 
 #### 6.1.1 웹 애플리케이션 배포
 ```yaml
@@ -1256,12 +1657,15 @@ kubectl exec -it curl-pod -- sh -c \
 > - Deployment/Service/Endpoint 상태
 > - Cilium 엔드포인트 등록
 > - 로드밸런싱 동작 확인
-### 6.2 모니터링 도구 구성
+### 6.2 모니터링 도구 구성 📈
 
-> **구성 요소**
-> - Prometheus: 메트릭 수집 및 저장
-> - Grafana: 시각화 대시보드
-> - 사전 구성: Cilium/Hubble 대시보드
+#### 6.2.1 구성 요소 개요
+
+| 도구 | 용도 | 기능 |
+|------|------|------|
+| Prometheus | 메트릭 수집 | 시계열 데이터 저장 |
+| Grafana | 시각화 | 대시보드 제공 |
+| 대시보드 | 사전 구성 | Cilium/Hubble 통합 |
 
 #### 6.2.1 도구 설치
 ```bash
@@ -1345,15 +1749,24 @@ done
 
 ⸻
 
-5. NodePort를 통한 외부 접속
+### 6.3 외부 접속 설정 🌐
 
-호스트 PC에서 Prometheus 및 Grafana UI에 접근할 수 있도록 NodePort로 Service 타입을 변경합니다.
+#### 6.3.1 NodePort 구성
 
-#
+| 서비스 | 포트 | 접근 URL |
+|--------|------|----------|
+| Prometheus | 30001 | http://<노드_IP>:30001 |
+| Grafana | 30002 | http://<노드_IP>:30002 |
+
+```bash
+# 1. 서비스 확인
 kubectl get svc -n cilium-monitoring
-NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-grafana      ClusterIP   10.96.212.137   <none>        3000/TCP   6m36s
-prometheus   ClusterIP   10.96.240.147   <none>        9090/TCP   6m36s
+
+# 2. NodePort 변경
+kubectl patch svc -n cilium-monitoring prometheus \
+  -p '{"spec": {"type": "NodePort", "ports": [{"port": 9090, "nodePort": 30001}]}}'
+kubectl patch svc -n cilium-monitoring grafana \
+  -p '{"spec": {"type": "NodePort", "ports": [{"port": 3000, "nodePort": 30002}]}}'
 
 # NodePort 설정
 kubectl patch svc -n cilium-monitoring prometheus -p '{"spec": {"type": "NodePort", "ports": [{"port": 9090, "targetPort": 9090, "nodePort": 30001}]}}'
@@ -1369,4 +1782,32 @@ prometheus   NodePort   10.96.240.147   <none>        9090:30001/TCP   14m
 echo "http://192.168.10.100:30001"  # Prometheus
 echo "http://192.168.10.100:30002"  # Grafana
 
-위 과정을 통해 브라우저에서 http://<노드_IP>:30001 및 http://<노드_IP>:30002 로 Prometheus와 Grafana UI에 접근할 수 있습니다.
+#### 6.3.2 접속 검증 ✅
+
+```bash
+# 접속 URL 확인
+NODEIP=$(ip -4 addr show eth1 | grep -oP '(?<=inet\s)\d+(\.\d+){3}')
+echo "Prometheus: http://$NODEIP:30001"
+echo "Grafana: http://$NODEIP:30002"
+```
+
+## 7. 결론 및 정리
+
+### 7.1 학습 내용 요약
+
+| 영역 | 내용 | 실습 |
+|------|------|------|
+| CNI | Cilium 구성/관리 | 기본 설정 |
+| 관측성 | Hubble 통합 | UI/메트릭 |
+| 정책 | L3-L7 제어 | Star Wars 데모 |
+
+### 7.2 다음 단계 학습
+
+> **심화 학습 주제**
+> - eBPF 프로그래밍
+> - 서비스 메시 통합
+> - 멀티 클러스터 구성
+> - 보안 정책 고도화
+
+---
+문서 끝
