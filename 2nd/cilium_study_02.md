@@ -557,9 +557,9 @@ kubectl describe cnp l3-l4-policy
 ```
 
 
-### 3.5 L7 정책 구성 🌐
+### 3.5 L7 정책 구성
 
-#### 3.5.1 L7 정책 개요 📝
+#### 3.5.1 L7 정책 개요
 
 | 특징 | 설명 | 예시 |
 |------|------|------|
@@ -567,7 +567,7 @@ kubectl describe cnp l3-l4-policy
 | 세부 제어 | 요청/응답 제어 | 헤더/쿠키 검사 |
 | 보안 강화 | 애플리케이션 보호 | API 접근 제한 |
 
-#### 3.5.2 HTTP 정책 예시 ⚡️
+#### 3.5.2 HTTP 정책 예시
 
 ```yaml
 apiVersion: cilium.io/v2
@@ -590,7 +590,7 @@ spec:
         http:
         - method: GET
           path: "/api/v1/products"
-#### 3.5.3 정책 구성 요소 📋
+#### 3.5.3 정책 구성 요소
 
 | 구성 | 설명 | 예시 |
 |------|------|------|
@@ -599,7 +599,7 @@ spec:
 | 경로 | URL 패턴 매칭 | /api/v1/* |
 | 헤더 | HTTP 헤더 규칙 | Authorization |
 
-#### 3.5.4 검증 및 모니터링 🔍
+#### 3.5.4 검증 및 모니터링
 
 ```bash
 # 1. 정책 적용 확인
@@ -610,9 +610,9 @@ cilium monitor --type l7
 ```
 
 
-### 3.6 트래픽 모니터링 🔍
+### 3.6 트래픽 모니터링
 
-#### 3.6.1 모니터링 도구 📊
+#### 3.6.1 모니터링 도구
 
 | 도구 | 용도 | 특징 |
 |------|------|------|
@@ -620,7 +620,7 @@ cilium monitor --type l7
 | cilium monitor | 실시간 분석 | 상세 로그 |
 | Prometheus | 메트릭 수집 | 시계열 데이터 |
 
-#### 3.6.2 모니터링 명령어 ⌨️
+#### 3.6.2 모니터링 명령어
 
 ```bash
 # 1. 일반 트래픽 모니터링
@@ -636,7 +636,7 @@ cilium monitor --related-to ENDPOINT_ID
 cilium monitor --type drop
 ```
 
-#### 3.6.3 모니터링 분석 팁 💡
+#### 3.6.3 모니터링 분석 팁
 
 | 상황 | 확인 사항 | 해결 방법 |
 |------|-----------|-----------|
@@ -644,7 +644,7 @@ cilium monitor --type drop
 | L7 오류 | 프로토콜 설정 | 정책 규칙 확인 |
 | 성능 저하 | 메트릭 추이 | 리소스 조정 |
 
-> 🔍 **디버깅 체크리스트**
+> **디버깅 체크리스트**
 > - 엔드포인트 상태 확인
 > - 정책 적용 상태 검증
 > - 로그 레벨 조정
@@ -655,9 +655,9 @@ cilium monitor --type drop
 이것으로 Cilium Study Week 2 문서를 마칩니다. 
 더 자세한 내용은 [Cilium 공식 문서](https://docs.cilium.io)를 참조하세요.
 
-### 3.7 Hubble Client 구성 🖥️
+### 3.7 Hubble Client 구성
 
-#### 3.7.1 Client 설정 개요 📝
+#### 3.7.1 Client 설정 개요
 
 | 구성 요소 | 설명 | 용도 |
 |----------|------|------|
@@ -665,7 +665,7 @@ cilium monitor --type drop
 | Relay 연결 | 포트 포워딩 | 클러스터 연결 |
 | CLI 도구 | 명령행 인터페이스 | 모니터링/분석 |
 
-#### 3.7.2 Client 연결 설정 ⚡️
+#### 3.7.2 Client 연결 설정
 
 ```bash
 # 1. Relay 연결 설정
@@ -684,7 +684,7 @@ hubble status
 | Flows | 현재/최대 플로우 | 12,285/12,285 |
 | Rate | 초당 플로우 수 | 41.20/s |
 
-#### 3.7.3 Client 설정 관리 ⚙️
+#### 3.7.3 Client 설정 관리
 
 ```bash
 # 1. 설정 확인
@@ -703,9 +703,9 @@ hubble observe -f
 
 ⸻
 
-### 3.8 고급 운영 관리 🔧
+### 3.8 고급 운영 관리
 
-#### 3.8.1 운영 환경 설정 ⚙️
+#### 3.8.1 운영 환경 설정
 
 | 구성 요소 | 설명 | 용도 |
 |----------|------|------|
@@ -761,7 +761,7 @@ c1 monitor -v -v --hex
 c1 monitor -v --type l7
 
 
-#### 3.8.6 IP 및 Identity 관리 🔑
+#### 3.8.6 IP 및 Identity 관리
 
 | 관리 항목 | 명령어 | 설명 |
 |----------|--------|------|
@@ -786,7 +786,7 @@ c0 endpoint log <id>       # 로그
 ```
 
 
-#### 3.8.7 로드밸런서 및 NAT 관리 🔄
+#### 3.8.7 로드밸런서 및 NAT 관리
 
 ##### A. 서비스 관리
 | 구성 요소 | 명령어 | 설명 |
@@ -810,11 +810,11 @@ c0 bpf nat list    # NAT 항목
 c0 bpf ct list global  # 연결 추적
 ```
 
-> 💡 **관리 팁**
+> **관리 팁**
 > - 정기적인 상태 점검
 > - 연결 추적 테이블 관리
 > - NAT 항목 모니터링
-#### 3.8.8 시스템 모니터링 📊
+#### 3.8.8 시스템 모니터링
 
 ##### A. 시스템 구성 요소
 | 구성 요소 | 명령어 | 설명 |
@@ -844,9 +844,9 @@ c0 statedb dump         # 상태 DB
 > - 이벤트 로그 분석
 > - 시스템 상태 추적
 
-## 4. Star Wars 데모 실습 🚀
+## 4. Star Wars 데모 실습
 
-### 4.1 데모 개요 📋
+### 4.1 데모 개요
 
 | 구성 요소 | 설명 | 목적 |
 |----------|------|------|
@@ -854,9 +854,9 @@ c0 statedb dump         # 상태 DB
 | 네트워크 정책 | Cilium CNP | 접근 제어 |
 | 모니터링 | Hubble UI | 트래픽 관찰 |
 
-### 4.2 환경 구성 🛠️
+### 4.2 환경 구성
 
-#### 4.2.1 애플리케이션 배포 📦
+#### 4.2.1 애플리케이션 배포
 
 ```bash
 # 1. 데모 리소스 생성
@@ -886,7 +886,7 @@ kubectl get deploy,svc,ep deathstar
 | 조직 구분 | Empire vs Alliance |
 | 기본 정책 | 전체 통신 허용 |
 
-#### 4.2.2 Cilium 리소스 검증 🔍
+#### 4.2.2 Cilium 리소스 검증
 
 | 검증 항목 | 확인 내용 | 방법 |
 |----------|-----------|------|
@@ -914,9 +914,9 @@ c2 endpoint list
 | IDENTITY | 318 | 식별자 번호 |
 | LABELS | k8s:org=empire | 조직 레이블 |
 
-### 4.3 트래픽 모니터링 👀
+### 4.3 트래픽 모니터링
 
-#### 4.3.1 초기 상태 확인 📊
+#### 4.3.1 초기 상태 확인
 
 | 항목 | 상태 | 비고 |
 |------|------|------|
@@ -924,7 +924,7 @@ c2 endpoint list
 | 레이블 기반 | 제한 없음 | 모든 레이블 허용 |
 | 모니터링 | 활성화 | 전체 트래픽 관찰 |
 
-#### 4.3.2 Identity 설정 🏷️
+#### 4.3.2 Identity 설정
 
 ```bash
 # 1. Pod별 Identity 확인
@@ -942,7 +942,7 @@ DEATHSTARID=8113
 | TIE Fighter | 56716 | Empire |
 | Deathstar | 8113 | Empire |
 
-#### 4.3.3 트래픽 모니터링 🔍
+#### 4.3.3 트래픽 모니터링
 
 ##### A. 모니터링 설정
 ```bash
@@ -963,7 +963,7 @@ hubble observe -f --protocol tcp --from-identity $DEATHSTARID  # Deathstar
 | --from-identity | 출발지 필터 | `$XWINGID` |
 | --protocol | 프로토콜 필터 | `tcp` |
 
-#### 4.3.4 접근 테스트 ⚡️
+#### 4.3.4 접근 테스트
 
 | 시나리오 | 설명 | 예상 결과 |
 |----------|------|-----------|
@@ -990,7 +990,7 @@ kubectl exec tiefighter -- curl -s -XPOST \
 hubble observe -f --protocol tcp --from-identity $TIEFIGHTERID
 ```
 
-### 4.4 네트워크 정책 적용 🔒
+### 4.4 네트워크 정책 적용
 
 #### 4.4.1 정책 개요
 
@@ -1000,7 +1000,7 @@ hubble observe -f --protocol tcp --from-identity $TIEFIGHTERID
 | 필터링 기준 | 레이블 기반 | org=empire |
 | 허용 범위 | 조직 내부 | Empire 통신만 |
 
-#### 4.4.2 정책 정의 📝
+#### 4.4.2 정책 정의 
 
 ```yaml
 apiVersion: "cilium.io/v2"
@@ -1023,7 +1023,7 @@ spec:
         protocol: TCP
 ```
 
-#### 4.4.3 정책 적용 ✨
+#### 4.4.3 정책 적용 
 
 ```bash
 # 1. 정책 적용
@@ -1044,7 +1044,7 @@ hubble observe -f --type policy-verdict
 
 ⸻
 
-## 5. 정리 및 결론 📝
+## 5. 정리 및 결론 
 
 ### 5.1 학습 내용 요약 
 - Cilium CNI 구성 및 관리
@@ -1056,11 +1056,11 @@ hubble observe -f --type policy-verdict
 - 서비스 메시 통합
 - 보안 모니터링 강화
 
-> 💡 **참고 자료**
+> **참고 자료**
 > - [Cilium 문서](https://docs.cilium.io)
 > - [Hubble 가이드](https://docs.cilium.io/en/stable/gettingstarted/hubble/)
 > - [정책 레퍼런스](https://docs.cilium.io/en/stable/policy/)
-#### 4.4.4 정책 검증 및 모니터링 🔍
+#### 4.4.4 정책 검증 및 모니터링 
 
 ##### A. 정책 상태 확인
 ```bash
@@ -1080,9 +1080,9 @@ hubble observe -f --type drop
 | 패킷 확인 | `hubble observe -f --type drop` | 드롭 기록 |
 | TCP 모니터링 | `hubble observe --protocol tcp` | 정책 적용 |
 
-## 5. 참고 자료 및 결론 📚
+## 5. 참고 자료 및 결론 
 
-### 5.1 주요 문서 📖
+### 5.1 주요 문서 
 
 | 자료 | 설명 | URL |
 |------|------|-----|
@@ -1090,9 +1090,9 @@ hubble observe -f --type drop
 | Hubble | 관측성 가이드 | [링크](https://docs.cilium.io/en/stable/gettingstarted/hubble/) |
 | 정책 | 네트워크 정책 | [링크](https://docs.cilium.io/en/stable/policy/) |
 
-### 5.2 학습 자원 🎓
+### 5.2 학습 자원 
 
-> 💡 **추가 학습 경로**
+> **추가 학습 경로**
 > - Cilium GitHub 저장소 탐색
 > - 공식 블로그 글 학습
 > - Hubble 실습 튜토리얼
@@ -1498,9 +1498,9 @@ kubectl -n kube-system exec ds/cilium -- tail -f /var/run/cilium/hubble/events.l
 
 ⸻
 
-### 5.3 Dynamic Exporter 구성 🔄
+### 5.3 Dynamic Exporter 구성 
 
-#### 5.3.1 Dynamic Exporter 특징 📊
+#### 5.3.1 Dynamic Exporter 특징 
 
 | 기능 | 설명 | 장점 |
 |------|------|------|
@@ -1656,7 +1656,7 @@ kubectl exec -it curl-pod -- sh -c \
 > - Deployment/Service/Endpoint 상태
 > - Cilium 엔드포인트 등록
 > - 로드밸런싱 동작 확인
-### 6.2 모니터링 도구 구성 📈
+### 6.2 모니터링 도구 구성 
 
 #### 6.2.1 구성 요소 개요
 
@@ -1781,7 +1781,7 @@ prometheus   NodePort   10.96.240.147   <none>        9090:30001/TCP   14m
 echo "http://192.168.10.100:30001"  # Prometheus
 echo "http://192.168.10.100:30002"  # Grafana
 
-#### 6.3.2 접속 검증 ✅
+#### 6.3.2 접속 검증 
 
 ```bash
 # 접속 URL 확인
