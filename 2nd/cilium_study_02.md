@@ -733,7 +733,7 @@ alias c2="kubectl exec -it $CILIUMPOD2 -n kube-system -c cilium-agent -- cilium"
 alias c0bpf="kubectl exec -it $CILIUMPOD0 -n kube-system -c cilium-agent -- bpftool"
 alias c1bpf="kubectl exec -it $CILIUMPOD1 -n kube-system -c cilium-agent -- bpftool"
 alias c2bpf="kubectl exec -it $CILIUMPOD2 -n kube-system -c cilium-agent -- bpftool"
-```
+
 c0 endpoint list -o json
 c1 endpoint list
 c2 endpoint list
@@ -761,7 +761,7 @@ c1 monitor -v -v --hex
 
 ## Layer7
 c1 monitor -v --type l7
-
+```
 
 #### 3.8.6 IP 및 Identity 관리
 
@@ -1743,8 +1743,6 @@ for i in w1 w2 ; do
     sudo ss -tnlp | grep -E '9962|9963|9965'
 done
 ```
-  echo
-done
 
 위 확인을 통해 각 노드에서 Cilium 컴포넌트의 메트릭 포트가 정상적으로 열렸음을 검증합니다.
 
