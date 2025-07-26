@@ -497,11 +497,13 @@ cilium status
 # → “Hubble Relay: OK” 메시지 확인
 
 # Hubble 설정 반영 확인
+```bash
 cilium config view | grep -i hubble
 kubectl get cm -n kube-system cilium-config -o json | grep -i hubble
 
 # Secret 확인
 kubectl get secret -n kube-system | grep -iE 'cilium-ca|hubble'
+```
 
 ### 3.4 네트워크 정책 실습
 
@@ -789,6 +791,7 @@ c0 endpoint log <id>       # 로그
 #### 3.8.7 로드밸런서 및 NAT 관리
 
 ##### A. 서비스 관리
+
 | 구성 요소 | 명령어 | 설명 |
 |----------|--------|------|
 | 서비스 목록 | `c0 service list` | LB 서비스 조회 |
@@ -1437,28 +1440,27 @@ hubble.export.static.fieldMask:  # 필드 마스킹
 > `hubble observe --print-raw-filters` 명령을 활용해 필요한 필터 조건을 생성할 수 있습니다.
 
 ```bash
-# You can use hubble CLI to generated required filters (see Specifying Raw Flow Filters for more examples).
-# For example, to filter flows with verdict DENIED or ERROR, run:
+```bash
+# 필터링 설정 생성
 hubble observe --verdict DROPPED --verdict ERROR --print-raw-filters
-allowlist:
-- '{"verdict":["DROPPED","ERROR"]}'
 
-위 예시는 verdict가 DROPPED 또는 ERROR인 플로우만 로깅하도록 하는 허용 리스트입니다.
+# 전체 정보 유지 (pod 라벨 제외)
+hubble-export-fieldmask: time source.identity source.namespace source.pod_name destination.identity \
+  destination.namespace destination.pod_name source_service destination_service l4 IP ethernet l7 \
+  Type node_name is_reply event_type verdict Summary
 
-# To keep all information except pod labels:
-hubble-export-fieldmask: time source.identity source.namespace source.pod_name destination.identity destination.namespace destination.pod_name source_service destination_service l4 IP ethernet l7 Type node_name is_reply event_type verdict Summary
+# 기본 정보만 유지
+hubble-export-fieldmask: time source.namespace source.pod_name destination.namespace \
+  destination.pod_name l4 IP node_name is_reply verdict
+```
 
-# To keep only timestamp, verdict, ports, IP addresses, node name, pod name, and namespace:
-hubble-export-fieldmask: time source.namespace source.pod_name destination.namespace destination.pod_name l4 IP node_name is_reply verdict
+> **필드 마스크 설정**
+> - 전체 필드: Pod 라벨을 제외한 모든 정보 유지
+> - 기본 필드: 타임스탬프, 포드/네임스페이스, 포트, IP, 노드명, 응답 여부, verdict만 유지
 
-첫 번째 필드 마스크는 pod 라벨을 제외한 모든 정보를,
-두 번째는 최소한의 정보(타임스탬프, 포드/네임스페이스, 포트, IP, 노드명, 응답 여부, verdict)만 유지합니다.
+### Static Exporter 구성 방법
 
-⸻
-
-Static Exporter 구성 방법
-
-방법 1: ConfigMap 직접 패치
+#### ConfigMap 직접 패치
 
 # 설정 방안 1 : Then paste the output to hubble-export-allowlist in cilium-config Config Map:
 kubectl -n kube-system patch cm cilium-config --patch-file=/dev/stdin <<-EOF
@@ -1537,9 +1539,9 @@ helm upgrade cilium cilium/cilium --version 1.17.6 \
 > - 실시간 구성 변경
 > - Static Exporter와 동일한 기능 지원
 > - Pod 재시작 없이 설정 적용
-## 6. 메트릭 수집 테스트 📊
+## 6. 메트릭 수집 테스트
 
-### 6.1 테스트 환경 구성 🔧
+### 6.1 테스트 환경 구성
 
 #### 6.1.1 구성 요소 개요
 
@@ -1781,6 +1783,7 @@ prometheus   NodePort   10.96.240.147   <none>        9090:30001/TCP   14m
 echo "http://192.168.10.100:30001"  # Prometheus
 echo "http://192.168.10.100:30002"  # Grafana
 
+```
 #### 6.3.2 접속 검증 
 
 ```bash
