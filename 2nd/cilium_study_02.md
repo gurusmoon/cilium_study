@@ -1,5 +1,4 @@
 
-
 # Cilium Study - Week 2
 
 이 문서는 CloudNet@ 팀에서 진행한 Cilium Study 내용을 정리한 자료입니다. 본 스터디를 제공해주신 가시다님과 CloudNet@ 팀 모든 분들께 감사드립니다.
@@ -48,7 +47,7 @@
 
 ---
 
-## 2. 실습 환경 배포 🚀
+## 2. 실습 환경 배포
 
 ### 2.1 배포 파일 구성
 
@@ -125,7 +124,7 @@ cat /etc/hosts
 | 호스트 엔트리 | 노드별 IP 주소 매핑 | 모든 노드 등록 |
 | 도메인 해석 | 클러스터 도메인 설정 | 내부 DNS 동작 |
 
-#### 2.3.2 노드 연결성 검증
+#### 2.3.3 노드 연결성 검증
 ```bash
 # 워커 노드 SSH 접속 테스트
 sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w1 hostname
@@ -136,7 +135,6 @@ sshpass -p 'vagrant' ssh -o StrictHostKeyChecking=no vagrant@k8s-w2 hostname
 ```bash
 # 네트워크 인터페이스 상태
 ifconfig | grep -iEA1 'eth[0-9]:'
-```
 ```
 
 #### 2.3.4 클러스터 구성 검증
@@ -167,7 +165,6 @@ cat /var/lib/kubelet/kubeadm-flags.env
 for i in w1 w2 ; do
   echo ">> node : k8s-$i <<"
   sshpass -p 'vagrant' ssh vagrant@k8s-$i cat /var/lib/kubelet/kubeadm-flags.env
-  echo
 done
 ```
 
@@ -297,8 +294,8 @@ kubectl exec -n kube-system -c cilium-agent -it ds/cilium -- \
 > - 필요한 포트 미사용 상태 확인
 > - 인증서 갱신 주기 확인
 
-```bash
-```bash
+```
+
 #### 3.1.2 설치 절차
 
 ```bash
